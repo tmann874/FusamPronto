@@ -1,7 +1,7 @@
 /**
- * Fusam Pronto-Socorro - Google Maps Style Interactive Hospital Navigation Engine
- * Mapa interativo estilo Google Maps / Uber Eats com suporte a arrastar (pan),
- * zoom (+ / -), rota animada em tempo real, marcadores dinâmicos e planta do hospital.
+ * Fusam Pronto-Socorro - Fusam Maps 2.0 (1000x Cooler Google Maps Navigation Engine)
+ * Motor vetorial avançado estilo Apple/Google Maps com visual 2.5D arquitetônico,
+ * rota de laser com setas direcionais animadas, sonar de emergência e HUD de telemetria.
  */
 
 export class GoogleStyleHospitalMap {
@@ -18,16 +18,17 @@ export class GoogleStyleHospitalMap {
     this.startX = 0;
     this.startY = 0;
     this.animFrameId = null;
-    this.routeProgress = 0.55; // 0 = Oficina, 1 = Leito
-    this.isFloorPlan = false; // false: Campus, true: Planta Interna
+    this.routeProgress = 0.58;
+    this.isFloorPlan = false;
+    this.radarAngle = 0;
     
-    // Rota definida por pontos no mapa
+    // Rota turn-by-turn do hospital
     this.routePoints = [
-      { x: 110, y: 310 }, // Oficina Biomédica
-      { x: 210, y: 310 }, // Corredor Principal
-      { x: 210, y: 200 }, // Elevadores Bloco A
-      { x: 310, y: 200 }, // Hall 2º Andar
-      { x: 390, y: 130 }  // UTI Adulto - Leito 03
+      { x: 100, y: 310 }, // Oficina da Engenharia Clínica
+      { x: 210, y: 310 }, // Cruzamento Corredor Central
+      { x: 210, y: 190 }, // Elevadores e Rampa Bloco A
+      { x: 310, y: 190 }, // Acesso ao 2º Andar
+      { x: 400, y: 120 }  // UTI Adulto - Leito 03
     ];
 
     this.init();
@@ -38,11 +39,11 @@ export class GoogleStyleHospitalMap {
     this.container.innerHTML = '';
     this.container.style.position = 'relative';
     this.container.style.overflow = 'hidden';
-    this.container.style.borderRadius = '12px';
+    this.container.style.borderRadius = '16px';
     this.container.style.userSelect = 'none';
     this.container.style.touchAction = 'none';
 
-    // Criação do Canvas
+    // Canvas de Alto Desempenho
     this.canvas = document.createElement('canvas');
     this.canvas.className = 'w-full h-full block cursor-grab';
     this.canvas.style.display = 'block';
@@ -51,17 +52,10 @@ export class GoogleStyleHospitalMap {
     this.container.appendChild(this.canvas);
     this.ctx = this.canvas.getContext('2d');
 
-    // Controles estilo Google Maps (Zoom +, Zoom -, Centralizar, Alternar Visão)
     this.createMapControls();
-
-    // Eventos de redimensionamento
     this.resize();
     window.addEventListener('resize', () => this.resize());
-
-    // Eventos de Mouse & Touch (Arrastar e Zoom)
     this.bindInteractions();
-
-    // Iniciar loop de renderização e animação
     this.updateRouteProgressFromStatus();
     this.startAnimationLoop();
   }
@@ -86,10 +80,10 @@ export class GoogleStyleHospitalMap {
         this.routeProgress = 0.05;
         break;
       case 'assigned':
-        this.routeProgress = 0.15;
+        this.routeProgress = 0.18;
         break;
       case 'in_transit':
-        this.routeProgress = 0.58;
+        this.routeProgress = 0.62;
         break;
       case 'in_repair':
       case 'testing':
@@ -108,38 +102,42 @@ export class GoogleStyleHospitalMap {
   }
 
   createMapControls() {
-    // Container de Controles
+    // Painel de Controles Estilo Google Maps com Efeito Glassmorphism
     const controls = document.createElement('div');
     controls.className = 'absolute right-3 bottom-3 flex flex-col gap-1.5 z-20';
     controls.innerHTML = `
-      <div class="bg-white rounded-lg shadow-md border border-slate-200 overflow-hidden flex flex-col">
+      <div class="bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-slate-200/80 overflow-hidden flex flex-col">
         <button id="mapZoomIn" class="w-8 h-8 flex items-center justify-center text-slate-700 hover:bg-slate-100 font-bold text-base transition-colors" title="Aproximar">+</button>
         <div class="w-full h-px bg-slate-200"></div>
         <button id="mapZoomOut" class="w-8 h-8 flex items-center justify-center text-slate-700 hover:bg-slate-100 font-bold text-base transition-colors" title="Afastar">−</button>
       </div>
-      <button id="mapRecenter" class="w-8 h-8 rounded-lg bg-white shadow-md border border-slate-200 flex items-center justify-center text-slate-700 hover:bg-slate-100 transition-colors" title="Centralizar no Técnico">
+      <button id="mapRecenter" class="w-8 h-8 rounded-xl bg-white/95 backdrop-blur-md shadow-lg border border-slate-200/80 flex items-center justify-center text-slate-700 hover:bg-cyan-50 hover:text-cyan-600 transition-colors" title="Centralizar na Rota">
         🎯
       </button>
     `;
     this.container.appendChild(controls);
 
-    // Botão de Alternar Modo (Campus / Planta Interna)
-    const modeBtn = document.createElement('div');
-    modeBtn.className = 'absolute left-3 top-3 z-20 flex gap-1.5';
-    modeBtn.innerHTML = `
-      <button id="mapToggleFloor" class="bg-white/95 backdrop-blur px-2.5 py-1 rounded-full text-[11px] font-bold text-slate-700 shadow-sm border border-slate-200 hover:border-cyan-500 transition-all flex items-center gap-1">
-        <span>🏥</span> <span id="mapModeLabel">Planta Interna</span>
+    // Botões no Topo do Mapa
+    const topBar = document.createElement('div');
+    topBar.className = 'absolute left-3 top-3 z-20 flex items-center gap-2';
+    topBar.innerHTML = `
+      <button id="mapToggleFloor" class="bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full text-[11px] font-bold text-slate-800 shadow-md border border-slate-200/80 hover:border-cyan-500 hover:text-cyan-700 transition-all flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></span>
+        <span id="mapModeLabel">Planta Arquitetônica</span>
       </button>
+      <span class="bg-slate-900/80 text-white backdrop-blur px-2.5 py-1 rounded-full text-[10px] font-mono font-bold tracking-wider hidden sm:inline-flex items-center gap-1">
+        LIVE GPS • 60 FPS
+      </span>
     `;
-    this.container.appendChild(modeBtn);
+    this.container.appendChild(topBar);
 
-    // Banner de Rota Google Maps Style no Topo
+    // Banner Flutuante de Rota / Telemetria em Tempo Real
     this.etaBanner = document.createElement('div');
-    this.etaBanner.className = 'absolute left-3 bottom-3 z-10 bg-slate-900/90 text-white backdrop-blur px-3 py-1.5 rounded-xl shadow-lg border border-slate-700 text-xs flex items-center gap-2 pointer-events-none max-w-[240px]';
+    this.etaBanner.className = 'absolute left-3 bottom-3 z-10 bg-slate-900/90 text-white backdrop-blur-md px-3.5 py-2 rounded-xl shadow-xl border border-slate-700/80 text-xs flex items-center gap-2.5 pointer-events-none max-w-[270px]';
     this.updateEtaBanner();
     this.container.appendChild(this.etaBanner);
 
-    // Bind dos cliques nos controles
+    // Eventos dos Controles
     controls.querySelector('#mapZoomIn').onclick = (e) => {
       e.stopPropagation();
       this.zoomAt(1.25);
@@ -152,11 +150,11 @@ export class GoogleStyleHospitalMap {
       e.stopPropagation();
       this.recenter();
     };
-    modeBtn.querySelector('#mapToggleFloor').onclick = (e) => {
+    topBar.querySelector('#mapToggleFloor').onclick = (e) => {
       e.stopPropagation();
       this.isFloorPlan = !this.isFloorPlan;
-      const lbl = modeBtn.querySelector('#mapModeLabel');
-      if (lbl) lbl.textContent = this.isFloorPlan ? 'Vista Campus' : 'Planta Interna';
+      const lbl = topBar.querySelector('#mapModeLabel');
+      if (lbl) lbl.textContent = this.isFloorPlan ? 'Vista Campus 3D' : 'Planta Arquitetônica';
       this.render();
     };
   }
@@ -164,32 +162,34 @@ export class GoogleStyleHospitalMap {
   updateEtaBanner() {
     if (!this.etaBanner) return;
     const isDone = this.ticket?.status === 'completed';
-    const eta = isDone ? 'Chegou' : (this.ticket?.technician?.eta || 'Em rota');
-    const dest = this.ticket?.department || 'UTI Adulto';
+    const eta = isDone ? 'Finalizado' : (this.ticket?.technician?.eta || '4 min');
+    const dest = this.ticket?.department || 'UTI Adulto - Leito 03';
     
     this.etaBanner.innerHTML = `
-      <div class="w-2.5 h-2.5 rounded-full ${isDone ? 'bg-emerald-400' : 'bg-cyan-400 animate-ping'}"></div>
+      <div class="w-3 h-3 rounded-full ${isDone ? 'bg-emerald-400' : 'bg-cyan-400 animate-ping'} flex-shrink-0"></div>
       <div class="truncate">
-        <div class="font-bold text-[11px] leading-tight text-white">${isDone ? 'No local do chamado' : `Chegando em ${eta}`}</div>
-        <div class="text-[10px] text-slate-300 truncate">Rumo a: ${dest}</div>
+        <div class="font-extrabold text-[11px] leading-tight text-white flex items-center gap-1.5">
+          <span>${isDone ? 'Equipamento Entregue' : 'Técnico em Deslocamento'}</span>
+          <span class="text-cyan-400 font-mono text-[10px]">(${isDone ? 'OK' : eta})</span>
+        </div>
+        <div class="text-[10px] text-slate-300 truncate mt-0.5">Destino: <strong class="text-white">${dest}</strong></div>
       </div>
     `;
   }
 
   zoomAt(factor) {
-    this.zoom = Math.max(0.65, Math.min(2.5, this.zoom * factor));
+    this.zoom = Math.max(0.6, Math.min(2.8, this.zoom * factor));
     this.render();
   }
 
   recenter() {
-    this.zoom = 1;
+    this.zoom = 1.05;
     this.panX = 0;
     this.panY = 0;
     this.render();
   }
 
   bindInteractions() {
-    // Mouse Drag (Pan)
     this.canvas.addEventListener('mousedown', (e) => {
       this.isDragging = true;
       this.startX = e.clientX - this.panX;
@@ -211,7 +211,6 @@ export class GoogleStyleHospitalMap {
       }
     });
 
-    // Touch Drag (Mobile)
     this.canvas.addEventListener('touchstart', (e) => {
       if (e.touches.length === 1) {
         this.isDragging = true;
@@ -231,10 +230,9 @@ export class GoogleStyleHospitalMap {
       this.isDragging = false;
     });
 
-    // Mouse Wheel (Zoom)
     this.canvas.addEventListener('wheel', (e) => {
       e.preventDefault();
-      const delta = e.deltaY < 0 ? 1.15 : 0.88;
+      const delta = e.deltaY < 0 ? 1.12 : 0.88;
       this.zoomAt(delta);
     }, { passive: false });
   }
@@ -242,8 +240,9 @@ export class GoogleStyleHospitalMap {
   startAnimationLoop() {
     let dashOffset = 0;
     const loop = () => {
-      dashOffset += 0.45;
+      dashOffset += 0.55;
       this.dashOffset = dashOffset;
+      this.radarAngle += 0.04;
       this.render();
       this.animFrameId = requestAnimationFrame(loop);
     };
@@ -258,9 +257,8 @@ export class GoogleStyleHospitalMap {
   }
 
   getPointAlongRoute(progress) {
-    if (this.routePoints.length < 2) return { x: 100, y: 100 };
+    if (this.routePoints.length < 2) return { x: 100, y: 100, angle: 0 };
     
-    // Calcula distâncias totais dos segmentos
     let totalLen = 0;
     const segmentLens = [];
     for (let i = 0; i < this.routePoints.length - 1; i++) {
@@ -288,7 +286,7 @@ export class GoogleStyleHospitalMap {
       }
       accumulated += segLen;
     }
-    return this.routePoints[this.routePoints.length - 1];
+    return { ...this.routePoints[this.routePoints.length - 1], angle: 0 };
   }
 
   render() {
@@ -300,176 +298,237 @@ export class GoogleStyleHospitalMap {
     ctx.save();
     ctx.clearRect(0, 0, w, h);
 
-    // Transformação Pan & Zoom centralizado
+    // Pan & Zoom
     ctx.translate(w / 2 + this.panX, h / 2 + this.panY);
     ctx.scale(this.zoom, this.zoom);
-    ctx.translate(-250, -220); // Centraliza no complexo hospitalar
+    ctx.translate(-250, -210);
 
-    // 1. TERRENO / MAPA BASE ESTILO GOOGLE MAPS
+    // 1. TERRENO / GRID GOOGLE MAPS
     this.drawTerrain(ctx);
 
-    // 2. RUAS E CORREDORES HOSPITALARES
-    this.drawRoadsAndCorridors(ctx);
+    // 2. RUAS, CORREDORES E FAIXAS DE PEDESTRE
+    this.drawRoads(ctx);
 
-    // 3. BLOCOS E PAVILHÕES DO HOSPITAL COM NOMES
-    this.drawHospitalBuildings(ctx);
+    // 3. EDIFÍCIOS HOSPITALARES COM SOMBRA 2.5D
+    this.drawBuildings(ctx);
 
-    // 4. ROTA DE NAVEGAÇÃO GOOGLE MAPS STYLE (CYAN / BLUE GLOW)
-    this.drawNavigationRoute(ctx);
+    // 4. ROTA DE NAVEGAÇÃO LASER COM SETAS ANIMADAS
+    this.drawLaserRoute(ctx);
 
-    // 5. MARCADOR DE DESTINO (LEITO / EQUIPAMENTO)
-    this.drawDestinationPin(ctx);
+    // 5. SONAR RADAR E PINO DE DESTINO DO LEITO
+    this.drawDestinationSonar(ctx);
 
-    // 6. MARCADOR DO TÉCNICO (VEÍCULO / TÉCNICO EM DESLOCAMENTO)
-    this.drawTechnicianMarker(ctx);
+    // 6. MARCADOR DO TÉCNICO COM AURÉOLA DE DESLOCAMENTO
+    this.drawTechnicianVehicle(ctx);
+
+    // 7. ROSA DOS VENTOS / COMPASSO
+    this.drawCompass(ctx);
 
     ctx.restore();
   }
 
   drawTerrain(ctx) {
-    // Fundo cinza suave típico do Google Maps
-    ctx.fillStyle = '#f4f3f0';
-    ctx.fillRect(-200, -200, 900, 900);
+    // Fundo limpo de mapa urbano
+    ctx.fillStyle = '#f3f4f6';
+    ctx.fillRect(-250, -250, 1000, 950);
 
-    // Áreas Verdes / Jardins do Hospital
-    ctx.fillStyle = '#e5f3e5';
-    this.roundRect(ctx, -50, -40, 160, 120, 16);
-    ctx.fill();
-
-    this.roundRect(ctx, 360, 260, 160, 140, 16);
-    ctx.fill();
-
-    // Pequenas árvores decorativas no estilo Google Maps
-    const trees = [
-      { x: -10, y: 0 }, { x: 40, y: 20 }, { x: 70, y: -10 },
-      { x: 390, y: 300 }, { x: 440, y: 340 }, { x: 480, y: 290 }
-    ];
-    ctx.fillStyle = '#a8dab5';
-    trees.forEach(t => {
+    // Grid sutil arquitetônico
+    ctx.strokeStyle = 'rgba(203, 213, 225, 0.45)';
+    ctx.lineWidth = 0.5;
+    for (let x = -200; x < 750; x += 50) {
       ctx.beginPath();
-      ctx.arc(t.x, t.y, 6, 0, Math.PI * 2);
+      ctx.moveTo(x, -200);
+      ctx.lineTo(x, 700);
+      ctx.stroke();
+    }
+    for (let y = -200; y < 700; y += 50) {
+      ctx.beginPath();
+      ctx.moveTo(-200, y);
+      ctx.lineTo(750, y);
+      ctx.stroke();
+    }
+
+    // Praças e Áreas Arborizadas
+    ctx.fillStyle = '#e2f4e8';
+    this.roundRect(ctx, -60, -30, 160, 120, 18);
+    ctx.fill();
+
+    this.roundRect(ctx, 360, 270, 180, 130, 18);
+    ctx.fill();
+
+    // Árvores em vetor Google Maps
+    const trees = [
+      { x: -20, y: 0 }, { x: 30, y: 15 }, { x: 60, y: -10 },
+      { x: 380, y: 300 }, { x: 430, y: 340 }, { x: 480, y: 310 }, { x: 500, y: 360 }
+    ];
+    trees.forEach(t => {
+      ctx.fillStyle = 'rgba(16, 185, 129, 0.2)';
+      ctx.beginPath();
+      ctx.arc(t.x, t.y, 10, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#10b981';
+      ctx.beginPath();
+      ctx.arc(t.x, t.y, 5, 0, Math.PI * 2);
       ctx.fill();
     });
   }
 
-  drawRoadsAndCorridors(ctx) {
+  drawRoads(ctx) {
     ctx.save();
-    // Avenidas e Ruas de Acesso Externo
-    ctx.strokeStyle = '#dadce0';
-    ctx.lineWidth = 26;
+    // Vias principais
+    ctx.strokeStyle = '#cbd5e1';
+    ctx.lineWidth = 28;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
 
-    // Traçado das vias principais
     ctx.beginPath();
-    ctx.moveTo(-150, 200);
-    ctx.lineTo(650, 200);
+    ctx.moveTo(-150, 190);
+    ctx.lineTo(650, 190);
     ctx.moveTo(210, -150);
     ctx.lineTo(210, 550);
-    ctx.moveTo(110, 310);
+    ctx.moveTo(100, 310);
     ctx.lineTo(550, 310);
     ctx.stroke();
 
-    // Superfície branca das ruas (Google Maps Style)
+    // Asfalto Branco Iluminado
     ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 22;
+    ctx.lineWidth = 24;
     ctx.stroke();
 
-    // Nomes sutis das ruas no estilo Google Maps
-    ctx.fillStyle = '#9aa0a6';
-    ctx.font = 'bold 9px -apple-system, sans-serif';
-    ctx.fillText('AV. HOSPITALAR FUSAM', 230, 195);
-    ctx.fillText('CORREDOR CENTRAL DE INTERVENÇÃO', 218, 305);
+    // Faixas pontilhadas de tráfego interno
+    ctx.strokeStyle = '#e2e8f0';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([8, 12]);
+    ctx.beginPath();
+    ctx.moveTo(-120, 190);
+    ctx.lineTo(620, 190);
+    ctx.moveTo(210, -120);
+    ctx.lineTo(210, 520);
+    ctx.stroke();
+
+    // Nome das Avenidas
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#64748b';
+    ctx.font = 'bold 8.5px "JetBrains Mono", sans-serif';
+    ctx.fillText('AV. CENTRAL DE RESGATE FUSAM', 230, 185);
+    ctx.fillText('CORREDOR TÉCNICO BIOMÉDICO', 222, 305);
     ctx.restore();
   }
 
-  drawHospitalBuildings(ctx) {
+  drawBuildings(ctx) {
     const buildings = [
       {
         id: 'uti',
         title: 'UTI ADULTO - BLOCO A',
-        sub: '2º Andar • Suporte Intensivo',
-        x: 320, y: 70, w: 150, h: 95,
-        color: '#e8f0fe',
+        sub: '2º ANDAR • LEITO 03 (ALVO)',
+        x: 320, y: 60, w: 160, h: 100,
+        color: '#f0f9ff',
+        edgeColor: '#bae6fd',
         borderColor: '#0284c7',
+        badge: 'CÓDIGO VERMELHO',
         isTarget: true
       },
       {
         id: 'ps',
-        title: 'PRONTO-SOCORRO CENTRAL',
-        sub: 'Sala Vermelha & Triagem',
-        x: 40, y: 70, w: 140, h: 95,
-        color: '#fef2f2',
-        borderColor: '#dc2626'
+        title: 'PRONTO-SOCORRO',
+        sub: 'SALA VERMELHA & RESGATE',
+        x: 30, y: 60, w: 145, h: 100,
+        color: '#fff1f2',
+        edgeColor: '#fecdd3',
+        borderColor: '#e11d48',
+        badge: 'EMERGÊNCIA'
       },
       {
         id: 'surg',
         title: 'CENTRO CIRÚRGICO',
-        sub: 'Bloco Cirúrgico 1 a 6',
-        x: 320, y: 220, w: 150, h: 80,
+        sub: 'SALAS 01 A 06',
+        x: 320, y: 220, w: 160, h: 85,
         color: '#f0fdf4',
-        borderColor: '#059669'
+        edgeColor: '#bbf7d0',
+        borderColor: '#10b981',
+        badge: 'CIRURGIA'
       },
       {
         id: 'biomed',
         title: 'ENGENHARIA CLÍNICA',
-        sub: 'Oficina & Laboratório Biomédico',
-        x: 40, y: 260, w: 140, h: 90,
+        sub: 'OFICINA & LAB BIOMÉDICO',
+        x: 30, y: 260, w: 145, h: 90,
         color: '#ecfeff',
-        borderColor: '#0891b2'
+        edgeColor: '#a5f3fc',
+        borderColor: '#0891b2',
+        badge: 'BASE TÉCNICA'
       }
     ];
 
     buildings.forEach(b => {
       ctx.save();
 
-      // Sombra suave do edifício
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.06)';
-      ctx.shadowBlur = 8;
-      ctx.shadowOffsetY = 3;
-
-      // Fundo do edifício
-      ctx.fillStyle = b.color;
-      this.roundRect(ctx, b.x, b.y, b.w, b.h, 10);
+      // 2.5D Extrusão / Sombra Arquitetônica
+      ctx.fillStyle = b.edgeColor;
+      this.roundRect(ctx, b.x + 3, b.y + 4, b.w, b.h, 12);
       ctx.fill();
 
-      // Borda sutil
-      ctx.shadowColor = 'transparent';
+      // Face Superior do Edifício
+      ctx.fillStyle = b.color;
+      this.roundRect(ctx, b.x, b.y, b.w, b.h, 12);
+      ctx.fill();
+
+      // Borda com Destaque
       ctx.strokeStyle = b.borderColor;
       ctx.lineWidth = b.isTarget ? 2 : 1;
       ctx.stroke();
 
-      // Rótulos do edifício
-      ctx.fillStyle = '#1e293b';
+      // Badge no Canto
+      ctx.fillStyle = b.isTarget ? '#e11d48' : b.borderColor;
+      this.roundRect(ctx, b.x + 10, b.y + 12, 70, 14, 4);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 7px -apple-system, sans-serif';
+      ctx.fillText(b.badge, b.x + 15, b.y + 22);
+
+      // Título e Subtítulo
+      ctx.fillStyle = '#0f172a';
       ctx.font = 'bold 9.5px -apple-system, sans-serif';
-      ctx.fillText(b.title, b.x + 10, b.y + 24);
+      ctx.fillText(b.title, b.x + 10, b.y + 42);
 
       ctx.fillStyle = '#64748b';
       ctx.font = '8px -apple-system, sans-serif';
-      ctx.fillText(b.sub, b.x + 10, b.y + 38);
+      ctx.fillText(b.sub, b.x + 10, b.y + 55);
 
-      // Divisórias internas dos leitos quando der zoom
+      // Leitos Internos em Zoom
       if (this.zoom > 1.1) {
-        ctx.strokeStyle = 'rgba(148, 163, 184, 0.35)';
+        ctx.strokeStyle = 'rgba(148, 163, 184, 0.4)';
         ctx.lineWidth = 1;
-        for (let i = 1; i <= 3; i++) {
-          ctx.strokeRect(b.x + 10 + (i - 1) * 42, b.y + 48, 36, 32);
+        for (let i = 0; i < 3; i++) {
+          ctx.strokeRect(b.x + 10 + i * 46, b.y + 64, 40, 24);
+          ctx.fillStyle = '#94a3b8';
+          ctx.font = '7px monospace';
+          ctx.fillText(`L0${i + 1}`, b.x + 14 + i * 46, b.y + 76);
         }
       }
 
       ctx.restore();
     });
 
-    // Ponto de Heliporto H1
+    // Heliporto H1 com Radar Giratório
     ctx.save();
-    ctx.fillStyle = '#e2e8f0';
+    ctx.fillStyle = '#ffffff';
     ctx.beginPath();
     ctx.arc(520, 115, 26, 0, Math.PI * 2);
     ctx.fill();
-    ctx.strokeStyle = '#94a3b8';
-    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#0284c7';
+    ctx.lineWidth = 2.5;
     ctx.stroke();
-    ctx.fillStyle = '#475569';
+
+    // Feixe de Radar no Heliporto
+    ctx.beginPath();
+    ctx.moveTo(520, 115);
+    ctx.arc(520, 115, 25, this.radarAngle, this.radarAngle + 0.4);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(6, 182, 212, 0.3)';
+    ctx.fill();
+
+    ctx.fillStyle = '#0b5cab';
     ctx.font = 'bold 16px sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -477,125 +536,166 @@ export class GoogleStyleHospitalMap {
     ctx.restore();
   }
 
-  drawNavigationRoute(ctx) {
+  drawLaserRoute(ctx) {
     if (this.routePoints.length < 2) return;
 
     ctx.save();
 
-    // 1. Linha base de contorno da rota (Google Maps Route Border)
+    // 1. Halo Neon Externo (Glow)
     ctx.beginPath();
     ctx.moveTo(this.routePoints[0].x, this.routePoints[0].y);
     for (let i = 1; i < this.routePoints.length; i++) {
       ctx.lineTo(this.routePoints[i].x, this.routePoints[i].y);
     }
-    ctx.strokeStyle = '#0284c7';
-    ctx.lineWidth = 8;
+    ctx.strokeStyle = 'rgba(6, 182, 212, 0.25)';
+    ctx.lineWidth = 12;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.stroke();
 
-    // 2. Linha principal azul elétrico Google Maps
-    ctx.strokeStyle = '#38bdf8';
-    ctx.lineWidth = 5;
+    // 2. Trilha Azul Profundo
+    ctx.strokeStyle = '#0284c7';
+    ctx.lineWidth = 6;
     ctx.stroke();
 
-    // 3. Efeito de traços animados em direção ao destino (Uber / Google style)
+    // 3. Laser Elétrico Ciano
+    ctx.strokeStyle = '#00f2fe';
+    ctx.lineWidth = 3.5;
+    ctx.stroke();
+
+    // 4. Setas Direcionais Dinâmicas em Movimento
     ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 2.5;
-    ctx.setLineDash([6, 12]);
+    ctx.lineWidth = 2;
+    ctx.setLineDash([4, 14]);
     ctx.lineDashOffset = -this.dashOffset;
     ctx.stroke();
 
     ctx.restore();
   }
 
-  drawDestinationPin(ctx) {
-    const endPoint = this.routePoints[this.routePoints.length - 1];
+  drawDestinationSonar(ctx) {
+    const target = this.routePoints[this.routePoints.length - 1];
 
     ctx.save();
-    // Efeito de radar pulsante sob o leito
-    const pulseRadius = 14 + Math.sin(Date.now() / 250) * 4;
-    ctx.beginPath();
-    ctx.arc(endPoint.x, endPoint.y, pulseRadius, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(225, 29, 72, 0.2)';
-    ctx.fill();
+    // Sonar Ondular de Emergência
+    for (let r = 0; r < 3; r++) {
+      const pulse = ((Date.now() / 600 + r * 0.4) % 1.2);
+      ctx.beginPath();
+      ctx.arc(target.x, target.y, 8 + pulse * 28, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(225, 29, 72, ${1 - pulse / 1.2})`;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
 
-    // Marcador Pin estilo Google Maps
-    ctx.translate(endPoint.x, endPoint.y);
-    
-    // Sombra do pin
-    ctx.beginPath();
-    ctx.ellipse(0, 4, 8, 4, 0, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(0,0,0,0.2)';
-    ctx.fill();
+    // Pino Estilo Google Maps 3D
+    ctx.translate(target.x, target.y);
 
-    // Corpo do Pin Vermelho/Ciano
     ctx.fillStyle = '#e11d48';
     ctx.beginPath();
-    ctx.arc(0, -18, 12, 0, Math.PI * 2);
+    ctx.arc(0, -20, 13, 0, Math.PI * 2);
     ctx.lineTo(0, 0);
     ctx.closePath();
+    ctx.shadowColor = 'rgba(225, 29, 72, 0.4)';
+    ctx.shadowBlur = 10;
     ctx.fill();
 
-    // Círculo branco central
+    // Núcleo Branco
+    ctx.shadowColor = 'transparent';
+    ctx.fillStyle = '#ffffff';
     ctx.beginPath();
-    ctx.arc(0, -18, 5.5, 0, Math.PI * 2);
-    ctx.fillStyle = '#ffffff';
+    ctx.arc(0, -20, 5.5, 0, Math.PI * 2);
     ctx.fill();
 
-    // Tooltip estilo Google Maps com nome do leito
-    ctx.fillStyle = '#0f172a';
-    this.roundRect(ctx, -45, -46, 90, 18, 4);
+    // Tooltip Holográfico
+    ctx.fillStyle = '#090d16';
+    this.roundRect(ctx, -48, -50, 96, 20, 6);
     ctx.fill();
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 8.5px -apple-system, sans-serif';
+    ctx.fillStyle = '#00f2fe';
+    ctx.font = 'bold 8.5px "JetBrains Mono", sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('LEITO 03 - UTI', 0, -34);
+    ctx.fillText('LEITO 03 • UTI', 0, -36);
 
     ctx.restore();
   }
 
-  drawTechnicianMarker(ctx) {
-    const currentPos = this.getPointAlongRoute(this.routeProgress);
+  drawTechnicianVehicle(ctx) {
+    const pos = this.getPointAlongRoute(this.routeProgress);
 
     ctx.save();
-    ctx.translate(currentPos.x, currentPos.y);
+    ctx.translate(pos.x, pos.y);
 
-    // Efeito de pulso ciano de rastreamento
+    // Pulso Ciano de Telemetria
     ctx.beginPath();
-    ctx.arc(0, 0, 16, 0, Math.PI * 2);
+    ctx.arc(0, 0, 18, 0, Math.PI * 2);
     ctx.fillStyle = 'rgba(6, 182, 212, 0.25)';
     ctx.fill();
 
-    // Base circular com sombra
+    // Sombra do Veículo
     ctx.beginPath();
-    ctx.arc(0, 0, 11, 0, Math.PI * 2);
-    ctx.fillStyle = '#0891b2';
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.25)';
-    ctx.shadowBlur = 6;
-    ctx.shadowOffsetY = 2;
+    ctx.arc(0, 0, 12, 0, Math.PI * 2);
+    ctx.fillStyle = '#0b5cab';
+    ctx.shadowColor = 'rgba(6, 182, 212, 0.6)';
+    ctx.shadowBlur = 10;
     ctx.fill();
 
-    // Borda branca do marcador
+    // Anel Branco
     ctx.shadowColor = 'transparent';
     ctx.strokeStyle = '#ffffff';
     ctx.lineWidth = 2.5;
     ctx.stroke();
 
-    // Ícone de Scooter / Técnico no centro
-    ctx.font = '11px sans-serif';
+    // Ícone de Deslocamento
+    ctx.font = '12px sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('🛵', 0, 0.5);
 
-    // Etiqueta com o nome do técnico
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
-    this.roundRect(ctx, -38, -26, 76, 15, 4);
+    // Badge com Telemetria e Velocidade ao Vivo
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
+    this.roundRect(ctx, -42, -30, 84, 16, 5);
     ctx.fill();
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 8px -apple-system, sans-serif';
-    ctx.fillText(this.ticket?.technician?.name ? this.ticket.technician.name.split(' ')[1] || 'Técnico' : 'Técnico', 0, -16);
+    ctx.fillStyle = '#38bdf8';
+    ctx.font = 'bold 8px "JetBrains Mono", sans-serif';
+    ctx.fillText('24 km/h • EM ROTA', 0, -19);
 
+    ctx.restore();
+  }
+
+  drawCompass(ctx) {
+    ctx.save();
+    ctx.translate(560, 40);
+
+    // Fundo da Bússola
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+    ctx.beginPath();
+    ctx.arc(0, 0, 16, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(226, 232, 240, 0.9)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // Agulha Norte Vermelha
+    ctx.fillStyle = '#e11d48';
+    ctx.beginPath();
+    ctx.moveTo(0, -12);
+    ctx.lineTo(-4, 0);
+    ctx.lineTo(4, 0);
+    ctx.closePath();
+    ctx.fill();
+
+    // Agulha Sul Cinza
+    ctx.fillStyle = '#94a3b8';
+    ctx.beginPath();
+    ctx.moveTo(0, 12);
+    ctx.lineTo(-4, 0);
+    ctx.lineTo(4, 0);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = '#0f172a';
+    ctx.font = 'bold 8px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('N', 0, -14);
     ctx.restore();
   }
 

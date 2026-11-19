@@ -1,6 +1,6 @@
 /**
- * Fusam Pronto-Socorro - Aplicação Principal (Minimalist & Cool)
- * Gerenciamento de chamados, inbox, triagem com efeitos sonoros táteis e sirene médica.
+ * Fusam Pronto-Socorro - Aplicação Principal (1000x Cooler Edition)
+ * Gerenciamento de chamados, relógio de telemetria em tempo real, filtros dinâmicos e áudio tátil.
  */
 
 import { INITIAL_TICKETS, INBOX_MESSAGES, CATEGORIES_LIST, DEPARTMENTS_LIST } from './data.js';
@@ -28,6 +28,19 @@ class FusamApp {
     this.renderInbox();
     this.updateEmergencyBanner();
     this.bindGlobalEvents();
+    this.startClock();
+  }
+
+  startClock() {
+    const update = () => {
+      const clock = document.getElementById('clockTime');
+      if (clock) {
+        const now = new Date();
+        clock.textContent = now.toLocaleTimeString('pt-BR');
+      }
+    };
+    update();
+    setInterval(update, 1000);
   }
 
   loadState() {
@@ -133,8 +146,9 @@ class FusamApp {
       const textEl = document.getElementById('emergencyBannerText');
       if (textEl) {
         textEl.innerHTML = `
-          <span class="font-bold text-red-700">${activeCritical.length} Emergência Ativa:</span>
-          <span class="text-slate-700 ml-1 font-medium">${activeCritical[0].equipmentName} (${activeCritical[0].department})</span>
+          <span class="font-extrabold text-red-600 uppercase tracking-wider">🚨 ${activeCritical.length} Alerta de Suporte Vital:</span>
+          <span class="text-slate-800 font-bold ml-1">${activeCritical[0].equipmentName}</span>
+          <span class="text-slate-500 text-[11px] font-mono">(${activeCritical[0].department})</span>
         `;
       }
 
@@ -200,16 +214,16 @@ class FusamApp {
 
     if (filtered.length === 0) {
       container.innerHTML = `
-        <div class="col-span-full py-12 text-center bg-white rounded-2xl border border-slate-200/60 p-6 shadow-sm">
-          <div class="w-12 h-12 mx-auto mb-2 text-cyan-600 bg-cyan-50 rounded-xl flex items-center justify-center">
+        <div class="col-span-full py-14 text-center bg-white/90 backdrop-blur rounded-3xl border border-slate-200/80 p-8 shadow-sm">
+          <div class="w-14 h-14 mx-auto mb-3 text-cyan-600 bg-cyan-50 rounded-2xl flex items-center justify-center shadow-inner">
             ${Icons.inbox}
           </div>
-          <h3 class="text-sm font-bold text-slate-800">Nenhum chamado no filtro</h3>
-          <p class="text-xs text-slate-400 max-w-xs mx-auto mt-0.5">
-            Abra uma nova solicitação ou limpe a busca.
+          <h3 class="text-base font-bold text-slate-800">Nenhum chamado no filtro ativo</h3>
+          <p class="text-xs text-slate-400 max-w-xs mx-auto mt-1">
+            Abra uma nova solicitação ou selecione outra categoria.
           </p>
-          <button id="openNewTicketEmptyBtn" class="mt-3 btn-stylish btn-fusam-primary text-xs">
-            ${Icons.plusCircle} Nova Solicitação
+          <button id="openNewTicketEmptyBtn" class="mt-4 btn-stylish btn-fusam-primary text-xs">
+            ${Icons.plusCircle} Abrir Nova Solicitação
           </button>
         </div>
       `;
@@ -233,16 +247,16 @@ class FusamApp {
       return `
         <div class="ticket-card ${priorityMeta.borderClass} ${isCritical ? 'ticket-critical-glow' : ''}" data-id="${t.id}">
           
-          <!-- TOP ROW: ICON, ID, PRIORITY -->
           <div>
+            <!-- LINHA SUPERIOR COM ÍCONE GLOW E BADGE HOLOGRÁFICA -->
             <div class="flex items-center justify-between gap-2">
-              <div class="flex items-center gap-2.5">
+              <div class="flex items-center gap-3">
                 <div class="ticket-icon-box ${isCritical ? 'critical' : ''}">
                   ${categoryIcon}
                 </div>
                 <div>
                   <span class="ticket-id-tag font-mono font-bold">${t.id}</span>
-                  <div class="text-[11px] text-slate-400 font-medium">${t.createdAt.split(' ')[1] || t.createdAt}</div>
+                  <div class="text-[11px] text-slate-400 font-mono mt-0.5">${t.createdAt.split(' ')[1] || t.createdAt}</div>
                 </div>
               </div>
 
@@ -252,27 +266,27 @@ class FusamApp {
               </span>
             </div>
 
-            <!-- TITLE & LOCATION -->
-            <h3 class="text-sm font-bold text-slate-900 mt-2.5 leading-snug line-clamp-2">
+            <!-- TÍTULO PRINCIPAL E LOCALIZAÇÃO -->
+            <h3 class="text-sm font-bold text-slate-900 mt-3 leading-snug line-clamp-2">
               ${t.title}
             </h3>
             
-            <div class="text-xs text-slate-500 font-medium mt-1 flex items-center gap-1.5 truncate">
+            <div class="text-xs text-slate-500 font-medium mt-1.5 flex items-center gap-1.5 truncate">
               <span class="text-cyan-700 font-semibold truncate">${t.department}</span>
               <span class="text-slate-300">•</span>
               <span class="text-slate-400 text-[11px] font-mono">Pat: ${t.patrimony || 'S/N'}</span>
             </div>
           </div>
 
-          <!-- MINI DELIVERY TRACKER -->
+          <!-- MINI RADAR DE DELIVERY HUD -->
           <div class="card-delivery-bar">
-            <div class="flex items-center justify-between text-[11px] font-semibold text-slate-700">
+            <div class="flex items-center justify-between text-[11px] font-semibold text-slate-800">
               <span class="flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full ${t.status === 'completed' ? 'bg-emerald-500' : (isCritical ? 'bg-red-500 animate-ping' : 'bg-cyan-500')}"></span>
-                ${stepMeta.title}
+                <span class="w-2 h-2 rounded-full ${t.status === 'completed' ? 'bg-emerald-500' : (isCritical ? 'bg-rose-500 animate-ping' : 'bg-cyan-500')}"></span>
+                <span>${stepMeta.title}</span>
               </span>
-              <span class="text-cyan-700 text-[11px] font-bold">
-                ${t.status === 'completed' ? 'Liberado' : (t.technician ? t.technician.eta : 'Aguardando')}
+              <span class="text-cyan-700 text-[11px] font-extrabold font-mono">
+                ${t.status === 'completed' ? '✅ Liberado' : (t.technician ? `ETA ${t.technician.eta}` : 'Aguardando')}
               </span>
             </div>
 
@@ -280,13 +294,13 @@ class FusamApp {
               <div class="mini-track-fill" style="width: ${progressPercent}%;"></div>
             </div>
 
-            <!-- MINI TECH INFO -->
-            <div class="mt-2 pt-1.5 border-t border-slate-200/60 flex items-center justify-between text-[11px] text-slate-500">
-              <div class="flex items-center gap-1.5 truncate">
-                <span class="text-xs">${t.technician?.avatar || '👨‍🔧'}</span>
-                <span class="truncate">${t.technician?.name || 'Aguardando técnico'}</span>
+            <!-- TÉCNICO DESIGNADO -->
+            <div class="mt-2.5 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px] text-slate-500">
+              <div class="flex items-center gap-2 truncate">
+                <span class="text-sm">${t.technician?.avatar || '👨‍🔬'}</span>
+                <span class="font-medium text-slate-700 truncate">${t.technician?.name || 'Técnico em designação'}</span>
               </div>
-              <span class="text-cyan-600 font-semibold text-[10px] uppercase font-mono">${priorityMeta.slaText}</span>
+              <span class="text-cyan-600 font-bold text-[10px] uppercase font-mono tracking-wider">${priorityMeta.slaText}</span>
             </div>
           </div>
 
@@ -316,12 +330,12 @@ class FusamApp {
     }
 
     listEl.innerHTML = this.inbox.map(m => `
-      <div class="p-3 rounded-xl border border-slate-200/80 bg-white hover:border-cyan-400 transition-all cursor-pointer">
+      <div class="p-3.5 rounded-2xl border border-slate-200/80 bg-white hover:border-cyan-400 shadow-sm transition-all cursor-pointer">
         <div class="flex items-center justify-between text-[11px] text-slate-400 mb-1">
-          <span class="font-bold text-slate-700">${m.sender}</span>
-          <span class="font-mono">${m.time}</span>
+          <span class="font-bold text-slate-800">${m.sender}</span>
+          <span class="font-mono text-[10px]">${m.time}</span>
         </div>
-        <h4 class="text-xs font-bold text-slate-900 mb-0.5">${m.subject}</h4>
+        <h4 class="text-xs font-bold text-slate-900 mb-1">${m.subject}</h4>
         <p class="text-[11px] text-slate-500 leading-relaxed">${m.content}</p>
       </div>
     `).join('');
@@ -352,17 +366,20 @@ class FusamApp {
     const tabMessages = document.getElementById('tabInboxMessages');
     const contentCreate = document.getElementById('inboxContentCreate');
     const contentMessages = document.getElementById('inboxContentMessages');
+    const pinnedFooter = document.querySelector('.modal-pinned-footer');
 
     if (tab === 'create') {
       tabCreate?.classList.add('active');
       tabMessages?.classList.remove('active');
       contentCreate?.classList.remove('hidden');
       contentMessages?.classList.add('hidden');
+      if (pinnedFooter) pinnedFooter.style.display = 'flex';
     } else {
       tabMessages?.classList.add('active');
       tabCreate?.classList.remove('active');
       contentMessages?.classList.remove('hidden');
       contentCreate?.classList.add('hidden');
+      if (pinnedFooter) pinnedFooter.style.display = 'none';
     }
   }
 

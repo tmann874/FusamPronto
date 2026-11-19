@@ -9,7 +9,7 @@
   <!-- FAVICON OFICIAL FUSAM -->
   <link rel="icon" type="image/jpeg" href="./assets/fusam-logo.jpg">
 
-  <!-- CSS Minimalista & Design System -->
+  <!-- CSS Minimalista & Design System (1000x Cooler) -->
   <link rel="stylesheet" href="./css/style.css">
   
   <style>
@@ -44,28 +44,42 @@
 <body>
 
   <!-- =========================================================================
-       HEADER MINIMALISTA COM LOGOTIPO OFICIAL DA FUSAM
+       HEADER ULTRA-COOL COM LOGOTIPO OFICIAL & ECG TELEMETRIA VIVA
        ========================================================================= -->
   <header class="fusam-header">
     <div class="container py-3">
       <div class="flex items-center justify-between flex-wrap gap-3">
         
-        <!-- LOGO DA FUSAM + TÍTULO -->
+        <!-- LOGO DA FUSAM COM ANEL HOLOGRÁFICO + TÍTULO -->
         <a href="#" class="fusam-brand">
-          <img src="./assets/fusam-logo.jpg" alt="Logo Fusam" class="fusam-logo-img">
+          <div class="fusam-logo-wrapper">
+            <div class="fusam-logo-glow-ring"></div>
+            <img src="./assets/fusam-logo.jpg" alt="Logo Fusam" class="fusam-logo-img">
+          </div>
           <div class="fusam-brand-text">
             <div class="fusam-title-row">
               <span class="fusam-title-main">FUSAM</span>
               <span class="fusam-title-sub">PRONTO</span>
-              <span class="fusam-badge-pill">Emergência</span>
+              <div class="fusam-telemetry-badge">
+                <svg class="ecg-line" viewBox="0 0 40 20">
+                  <polyline points="0,10 8,10 12,3 16,17 20,7 24,13 28,10 40,10" />
+                </svg>
+                <span>ONLINE</span>
+              </div>
             </div>
-            <span class="fusam-header-desc">Engenharia Clínica & Telemetria</span>
+            <span class="text-[11px] text-slate-400 font-medium">Central Biomédica & Triagem de Emergência</span>
           </div>
         </a>
 
         <!-- AÇÕES DO CABEÇALHO -->
         <div class="flex items-center gap-2.5">
           
+          <!-- RELÓGIO DE TELEMETRIA AO VIVO -->
+          <div id="liveClock" class="text-xs font-mono font-bold text-slate-500 bg-white/80 px-2.5 py-1 rounded-full border border-slate-200/80 shadow-sm hidden md:inline-flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+            <span id="clockTime">16:45:00</span>
+          </div>
+
           <!-- TOGGLE DE SOM & CLIQUE -->
           <button id="soundToggleBtn" class="btn-stylish btn-fusam-ghost text-xs" title="Ligar/Desligar efeitos sonoros e cliques">
             <svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
@@ -91,15 +105,15 @@
   </header>
 
   <!-- =========================================================================
-       ALERTA DE EMERGÊNCIA CRÍTICA (ESTILO PILL TOAST DISCRETO & IMPACTANTE)
+       ALERTA DE EMERGÊNCIA CRÍTICA (HUD TOAST HOLOGRÁFICO)
        ========================================================================= -->
   <div id="emergencyCodeRedBanner" class="emergency-pill-wrapper hidden">
     <div class="emergency-pill-banner">
-      <div class="flex items-center gap-2.5 text-xs">
+      <div class="flex items-center gap-3 text-xs">
         <span class="emergency-pill-dot"></span>
         <div id="emergencyBannerText">
-          <span class="font-bold text-red-700">Emergência Crítica:</span>
-          <span class="text-slate-700">Equipamento de suporte à vida em atendimento prioritário.</span>
+          <span class="font-extrabold text-red-600 uppercase tracking-wider">Emergência Crítica:</span>
+          <span class="text-slate-800 font-medium ml-1">Equipamento de suporte à vida com resposta imediata.</span>
         </div>
       </div>
       <div class="flex items-center gap-2">
@@ -113,26 +127,29 @@
     </div>
   </div>
 
-  <!-- CONTEÚDO PRINCIPAL MINIMALISTA -->
+  <!-- CONTEÚDO PRINCIPAL ULTRA-COOL -->
   <main class="container py-5">
 
-    <!-- METRICS TICKER SUTIL (EM VEZ DE CARDS GIGANTES) -->
+    <!-- METRICS HUD FLUTUANTE -->
     <div class="metrics-pill-bar">
       <div class="metric-pill">
-        <span>Total:</span>
-        <span class="metric-pill-val" id="statTotal">0</span>
+        <span class="text-slate-400">Total Ocorrências:</span>
+        <span class="metric-pill-val font-mono" id="statTotal">0</span>
       </div>
       <div class="metric-pill">
-        <span>🚨 Críticos:</span>
-        <span class="metric-pill-val critical" id="statCritical">0</span>
+        <span class="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
+        <span class="text-slate-400">🚨 Código Vermelho:</span>
+        <span class="metric-pill-val critical font-mono" id="statCritical">0</span>
       </div>
       <div class="metric-pill">
-        <span>🛵 A Caminho / Reparo:</span>
-        <span class="metric-pill-val cyan" id="statInTransit">0</span>
+        <span class="w-2 h-2 rounded-full bg-cyan-500"></span>
+        <span class="text-slate-400">🛵 Em Rota / Reparo:</span>
+        <span class="metric-pill-val cyan font-mono" id="statInTransit">0</span>
       </div>
       <div class="metric-pill">
-        <span>✅ Liberados Hoje:</span>
-        <span class="metric-pill-val green" id="statCompleted">0</span>
+        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+        <span class="text-slate-400">✅ Liberados:</span>
+        <span class="metric-pill-val green font-mono" id="statCompleted">0</span>
       </div>
     </div>
 
@@ -142,7 +159,7 @@
       <!-- SEGMENTED TABS -->
       <div class="segmented-control-wrapper">
         <button class="segmented-tab-btn active" data-filter="all">
-          Todos
+          Todos os Chamados
         </button>
         <button class="segmented-tab-btn" data-filter="critical">
           🚨 Emergências
@@ -154,7 +171,7 @@
           Em Reparo
         </button>
         <button class="segmented-tab-btn" data-filter="completed">
-          Concluídos
+          Liberados
         </button>
       </div>
 
@@ -176,32 +193,37 @@
 
     <!-- GRID DE CHAMADOS REFINADA -->
     <section>
-      <div id="ticketsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <!-- Renderizado dinamicamente via JS com minimalismo -->
+      <div id="ticketsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <!-- Renderizado dinamicamente via JS com design 1000x cooler -->
       </div>
     </section>
 
   </main>
 
-  <!-- BOTÃO FLUTUANTE DE NOVA SOLICITAÇÃO (QUICK ACTION) -->
+  <!-- BOTÃO FLUTUANTE DE NOVA SOLICITAÇÃO (DYNAMIC ISLAND STYLE) -->
   <button id="floatingNewTicketBtn" class="floating-action-pill" title="Abrir chamado">
     <svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
     <span>Nova Solicitação</span>
   </button>
 
   <!-- =========================================================================
-       MODAL 1: CAIXA DE ENTRADA & FORMULÁRIO (MINIMALISTA)
+       MODAL 1: CAIXA DE ENTRADA & FORMULÁRIO (MINIMALISTA & COMPACTO)
        ========================================================================= -->
   <div id="inboxModal" class="modal-overlay hidden">
-    <div class="modal-container">
+    <div class="modal-container modal-inbox-container">
       
-      <!-- HEADER DO MODAL -->
-      <div class="p-4 border-b border-slate-100 flex items-center justify-between">
-        <div class="flex items-center gap-2.5">
-          <img src="./assets/fusam-logo.jpg" alt="Fusam" class="w-7 h-7 rounded-full object-cover">
+      <!-- HEADER DO MODAL (Sem imagem inútil - Ícone SVG Clínico Elegante) -->
+      <div class="modal-clean-header">
+        <div class="flex items-center gap-3">
+          <div class="modal-icon-badge">
+            <svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline>
+              <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
+            </svg>
+          </div>
           <div>
-            <h3 class="font-bold text-slate-900 text-sm">Caixa de Entrada & Solicitações</h3>
-            <p class="text-[11px] text-slate-400">Pronto-Socorro e Engenharia Clínica Fusam</p>
+            <h3 class="modal-header-title">Caixa de Entrada & Abertura de Chamado</h3>
+            <p class="modal-header-subtitle">Pronto-Socorro & Engenharia Clínica Fusam</p>
           </div>
         </div>
 
@@ -211,8 +233,8 @@
       </div>
 
       <!-- TABS DO MODAL -->
-      <div class="flex border-b border-slate-100 bg-white px-4 pt-2">
-        <button id="tabCreateRequest" class="segmented-tab-btn active mr-1">
+      <div class="modal-tabs-bar">
+        <button id="tabCreateRequest" class="segmented-tab-btn active">
           Escrever Solicitação
         </button>
         <button id="tabInboxMessages" class="segmented-tab-btn">
@@ -220,154 +242,177 @@
         </button>
       </div>
 
-      <!-- CORPO DO FORMULÁRIO -->
-      <div class="modal-body">
+      <!-- FORMULÁRIO COM CORPO SCROLLÁVEL DE ALTO CONTRASTE -->
+      <form id="createTicketForm" class="flex flex-col flex-1 min-h-0">
         
-        <!-- FORMULÁRIO -->
-        <div id="inboxContentCreate">
+        <!-- CORPO ROLÁVEL COM BARRA DE ROLAGEM CIANO DESTACADA -->
+        <div class="modal-scroll-body">
           
-          <!-- BOTÕES RÁPIDOS (PRESETS DE EMERGÊNCIA) -->
-          <div class="mb-3.5 p-2.5 bg-slate-50 rounded-xl border border-slate-200/70">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1.5">Preenchimento Rápido em 1 Clique:</span>
-            <div class="flex flex-wrap gap-1.5">
-              <button type="button" class="btn-stylish btn-fusam-ghost text-[11px] py-1 px-2.5 quick-preset-btn"
-                data-title="Ventilador Mecânico com Queda de Pressão"
-                data-cat="ventilator"
-                data-dept="UTI Adulto - Bloco A"
-                data-equip="Ventilador Mindray SV300"
-                data-desc="Alarme contínuo de pressão inspiratória na UTI. Suporte à vida necessário.">
-                🚨 Respirador (UTI)
-              </button>
+          <div id="inboxContentCreate">
+            <!-- ATALHOS EM 1 CLIQUE (FLEX-WRAP: NUNCA CORTA OU COMPACTA) -->
+            <div class="quick-presets-wrapper">
+              <div class="quick-presets-header">
+                <span class="w-2 h-2 rounded-full bg-cyan-500 inline-block"></span>
+                <span>Preenchimento Rápido em 1 Clique:</span>
+              </div>
+              <div class="quick-presets-grid">
+                <button type="button" class="quick-preset-pill quick-preset-btn"
+                  data-title="Ventilador Mecânico com Queda de Pressão"
+                  data-cat="ventilator"
+                  data-dept="UTI Adulto - Bloco A"
+                  data-equip="Ventilador Mindray SV300"
+                  data-desc="Alarme contínuo de pressão inspiratória na UTI. Suporte à vida necessário.">
+                  🚨 Respirador UTI
+                </button>
+                <button type="button" class="quick-preset-pill quick-preset-btn"
+                  data-title="Desfibrilador da Sala Vermelha sem Carga"
+                  data-cat="defibrillator"
+                  data-dept="Pronto-Socorro - Sala Vermelha (Emergência)"
+                  data-equip="Cardioversor Zoll DEA"
+                  data-desc="Falha no disparo do teste e aviso de bateria fraca. Box de ressuscitação.">
+                  ⚡ Desfibrilador (Sala Vermelha)
+                </button>
+                <button type="button" class="quick-preset-pill quick-preset-btn"
+                  data-title="Vazamento em Saída de Oxigênio"
+                  data-cat="oxygen"
+                  data-dept="Pronto-Socorro - Sala Amarela (Observação)"
+                  data-equip="Régua de Vácuo e O2"
+                  data-desc="Perda audível de pressão na régua de oxigênio medicinal.">
+                  💧 Vazamento O2
+                </button>
+                <button type="button" class="quick-preset-pill quick-preset-btn"
+                  data-title="Maca de Emergência Travada"
+                  data-cat="stretcher"
+                  data-dept="Pronto-Socorro - Triagem / Acolhimento"
+                  data-equip="Maca de Resgate Stryker"
+                  data-desc="Trava de elevação do leito travada na recepção de ambulâncias.">
+                  🛏️ Maca Travada
+                </button>
+              </div>
+            </div>
 
-              <button type="button" class="btn-stylish btn-fusam-ghost text-[11px] py-1 px-2.5 quick-preset-btn"
-                data-title="Desfibrilador da Sala Vermelha sem Carga"
-                data-cat="defibrillator"
-                data-dept="Pronto-Socorro - Sala Vermelha (Emergência)"
-                data-equip="Cardioversor Zoll DEA"
-                data-desc="Falha no disparo do teste e aviso de bateria fraca. Box de ressuscitação.">
-                ⚡ Desfibrilador (Sala Vermelha)
-              </button>
+            <!-- FORMULÁRIO COM GRIDS ROBUSTOS (ZERO-OVERLAP) -->
+            <div class="inbox-form-body">
+              
+              <!-- LINHA 1: TÍTULO & TIPO DE EQUIPAMENTO -->
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label class="form-label-clean" for="ticketTitle">Título da Ocorrência *</label>
+                  <input type="text" id="ticketTitle" name="title" class="form-input-clean" placeholder="Ex: Respirador com alarme de pressão..." required>
+                </div>
 
-              <button type="button" class="btn-stylish btn-fusam-ghost text-[11px] py-1 px-2.5 quick-preset-btn"
-                data-title="Vazamento em Saída de Oxigênio"
-                data-cat="oxygen"
-                data-dept="Pronto-Socorro - Sala Amarela (Observação)"
-                data-equip="Régua de Vácuo e O2"
-                data-desc="Perda audível de pressão na régua de oxigênio medicinal.">
-                💧 Vazamento O2
-              </button>
+                <div class="form-group">
+                  <label class="form-label-clean" for="ticketCategory">Tipo de Equipamento *</label>
+                  <select id="ticketCategory" name="category" class="form-input-clean" required>
+                  </select>
+                </div>
+              </div>
 
-              <button type="button" class="btn-stylish btn-fusam-ghost text-[11px] py-1 px-2.5 quick-preset-btn"
-                data-title="Maca de Emergência Travada"
-                data-cat="stretcher"
-                data-dept="Pronto-Socorro - Triagem / Acolhimento"
-                data-equip="Maca de Resgate Stryker"
-                data-desc="Trava de elevação do leito travada na recepção de ambulâncias.">
-                🛏️ Maca Travada
-              </button>
+              <!-- LINHA 2: SETOR, LEITO, PATRIMÔNIO -->
+              <div class="form-grid-3">
+                <div class="form-group">
+                  <label class="form-label-clean" for="ticketDepartment">Setor / Ala *</label>
+                  <select id="ticketDepartment" name="department" class="form-input-clean" required>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label-clean" for="ticketLocation">Local / Leito *</label>
+                  <input type="text" id="ticketLocation" name="sectorLocation" class="form-input-clean" placeholder="Ex: Box 02, Leito 05..." required>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label-clean" for="ticketPatrimony">Patrimônio / Tag</label>
+                  <input type="text" id="ticketPatrimony" name="patrimony" class="form-input-clean" placeholder="Ex: PAT-004812">
+                </div>
+              </div>
+
+              <!-- LINHA 3: MODELO DO APARELHO & GRAU DE URGÊNCIA -->
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label class="form-label-clean" for="ticketEquipment">Modelo do Aparelho</label>
+                  <input type="text" id="ticketEquipment" name="equipmentName" class="form-input-clean" placeholder="Ex: Respirador Mindray SV300">
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label-clean" for="ticketPriority">Grau de Urgência *</label>
+                  <select id="ticketPriority" name="priority" class="form-input-clean">
+                    <option value="critical">🚨 Emergência Crítica (SLA < 15 min)</option>
+                    <option value="high">⚠️ Urgência Alta (SLA < 1h)</option>
+                    <option value="medium" selected>⚡ Prioridade Média (SLA < 4h)</option>
+                    <option value="low">ℹ️ Baixa Prioridade (SLA 24h)</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- LINHA 4: CHECKBOX DE SUPORTE À VIDA COMPACTO -->
+              <div class="life-support-card">
+                <label class="life-support-label">
+                  <input type="checkbox" id="isLifeSupport" name="isLifeSupport" class="life-support-checkbox">
+                  <span>EQUIPAMENTO DE SUPORTE À VIDA / RISCO AO PACIENTE</span>
+                </label>
+                <span id="lifeSupportAlert" class="badge-code-red hidden">
+                  CÓDIGO VERMELHO
+                </span>
+              </div>
+
+              <!-- LINHA 5: DESCRIÇÃO -->
+              <div class="form-group">
+                <label class="form-label-clean" for="ticketDescription">Descrição Clínica do Problema *</label>
+                <textarea id="ticketDescription" name="description" rows="2" class="form-input-clean" placeholder="Descreva os sinais observados, alarmes e condição do paciente..." required></textarea>
+              </div>
+
+              <!-- LINHA 6: SOLICITANTE (3 COLUNAS) -->
+              <div class="reporter-info-card">
+                <div class="form-group">
+                  <label class="form-label-clean" style="margin-bottom:2px;">Solicitante *</label>
+                  <input type="text" name="reporterName" class="form-input-clean text-xs" placeholder="Seu Nome" value="Dr. Equipe Plantão" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label-clean" style="margin-bottom:2px;">Função / Cargo</label>
+                  <input type="text" name="reporterRole" class="form-input-clean text-xs" placeholder="Cargo" value="Equipe Assistencial">
+                </div>
+                <div class="form-group">
+                  <label class="form-label-clean" style="margin-bottom:2px;">Ramal / Contato</label>
+                  <input type="text" name="reporterContact" class="form-input-clean text-xs" placeholder="Ramal" value="Ramal 1100">
+                </div>
+              </div>
+
             </div>
           </div>
 
-          <form id="createTicketForm" class="space-y-3">
-            
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label class="form-label-clean" for="ticketTitle">Título da Ocorrência *</label>
-                <input type="text" id="ticketTitle" name="title" class="form-input-clean" placeholder="Ex: Respirador com alarme de pressão..." required>
-              </div>
-
-              <div>
-                <label class="form-label-clean" for="ticketCategory">Tipo de Equipamento *</label>
-                <select id="ticketCategory" name="category" class="form-input-clean" required>
-                </select>
-              </div>
+          <!-- MENSAGENS -->
+          <div id="inboxContentMessages" class="hidden">
+            <div id="inboxMessagesList" class="space-y-2">
             </div>
+          </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div>
-                <label class="form-label-clean" for="ticketDepartment">Setor / Ala *</label>
-                <select id="ticketDepartment" name="department" class="form-input-clean" required>
-                </select>
-              </div>
-
-              <div>
-                <label class="form-label-clean" for="ticketLocation">Local / Leito *</label>
-                <input type="text" id="ticketLocation" name="sectorLocation" class="form-input-clean" placeholder="Ex: Box 02, Leito 05..." required>
-              </div>
-
-              <div>
-                <label class="form-label-clean" for="ticketPatrimony">Patrimônio / Tag</label>
-                <input type="text" id="ticketPatrimony" name="patrimony" class="form-input-clean" placeholder="Ex: PAT-004812">
-              </div>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label class="form-label-clean" for="ticketEquipment">Modelo do Aparelho</label>
-                <input type="text" id="ticketEquipment" name="equipmentName" class="form-input-clean" placeholder="Ex: Respirador Mindray SV300">
-              </div>
-
-              <div>
-                <label class="form-label-clean" for="ticketPriority">Grau de Urgência</label>
-                <select id="ticketPriority" name="priority" class="form-input-clean">
-                  <option value="critical">🚨 Emergência Crítica (SLA < 15 min)</option>
-                  <option value="high">⚠️ Urgência Alta (SLA < 1h)</option>
-                  <option value="medium" selected>⚡ Prioridade Média (SLA < 4h)</option>
-                  <option value="low">ℹ️ Baixa Prioridade (SLA 24h)</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- CHECKBOX DE SUPORTE À VIDA -->
-            <div class="p-2.5 bg-red-50/60 border border-red-200 rounded-xl flex items-center justify-between text-xs">
-              <label class="flex items-center gap-2 cursor-pointer font-bold text-red-800">
-                <input type="checkbox" id="isLifeSupport" name="isLifeSupport" class="w-4 h-4 text-red-600 rounded">
-                <span>EQUIPAMENTO DE SUPORTE À VIDA / RISCO AO PACIENTE</span>
-              </label>
-              <span id="lifeSupportAlert" class="text-[10px] bg-red-600 text-white font-bold px-2 py-0.5 rounded-full hidden">
-                CÓDIGO VERMELHO
-              </span>
-            </div>
-
-            <!-- DESCRIÇÃO -->
-            <div>
-              <label class="form-label-clean" for="ticketDescription">Descrição do Problema *</label>
-              <textarea id="ticketDescription" name="description" rows="2" class="form-input-clean" placeholder="Descreva os sinais observados, alarmes e condição do paciente..." required></textarea>
-            </div>
-
-            <!-- SOLICITANTE -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 p-2.5 bg-slate-50 rounded-xl border border-slate-200/60 text-xs">
-              <input type="text" name="reporterName" class="form-input-clean text-xs" placeholder="Seu Nome" value="Dr. Equipe Plantão" required>
-              <input type="text" name="reporterRole" class="form-input-clean text-xs" placeholder="Cargo" value="Equipe Assistencial">
-              <input type="text" name="reporterContact" class="form-input-clean text-xs" placeholder="Ramal" value="Ramal 1100">
-            </div>
-
-            <!-- BOTÕES -->
-            <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
-              <button type="button" class="btn-stylish btn-fusam-ghost text-xs" onclick="document.getElementById('inboxModal').classList.add('hidden')">
-                Cancelar
-              </button>
-              <button type="submit" class="btn-stylish btn-fusam-primary text-xs">
-                Registrar e Despachar
-              </button>
-            </div>
-
-          </form>
         </div>
 
-        <!-- MENSAGENS -->
-        <div id="inboxContentMessages" class="hidden">
-          <div id="inboxMessagesList" class="space-y-2">
+        <!-- FOOTER FIXO (SEMPRE VISÍVEL - IMPOSSÍVEL DE IGNORAR) -->
+        <div class="modal-pinned-footer">
+          <div class="text-[11px] text-slate-500 flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></span>
+            <span>Triagem automática de Código Vermelho ativa</span>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button type="button" class="btn-stylish btn-fusam-ghost text-xs py-1.5 px-3" onclick="document.getElementById('inboxModal').classList.add('hidden')">
+              Cancelar
+            </button>
+            <button type="submit" class="btn-stylish btn-fusam-primary text-xs py-1.5 px-4 font-bold">
+              Registrar e Despachar
+            </button>
           </div>
         </div>
 
-      </div>
+      </form>
 
     </div>
   </div>
 
   <!-- =========================================================================
-       MODAL 2: RASTREADOR DE REPARO AO VIVO (ESTILO DELIVERY APP)
+       MODAL 2: RASTREADOR DE REPARO AO VIVO (ESTILO DELIVERY APP COM FUSAM MAPS)
        ========================================================================= -->
   <div id="trackingModal" class="modal-overlay hidden">
     <div class="modal-container">
@@ -376,7 +421,7 @@
     </div>
   </div>
 
-  <!-- SCRIPT UNIFICADO MINIMALISTA -->
+  <!-- SCRIPT UNIFICADO ULTRA-COOL -->
   <script src="./js/bundle.js"></script>
 
 </body>

@@ -380,33 +380,40 @@ export class RepairTracker {
             </div>
           </div>
 
-          <!-- HISTÓRICO DE MANUTENÇÃO -->
-          <div class="bg-white p-3 rounded-xl border border-slate-200/80 shadow-sm">
-            <div class="flex items-center justify-between pb-1.5 mb-2 border-b border-slate-100">
-              <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Histórico</h3>
-              <span class="text-[10px] text-slate-400">${t.timeline.length} eventos</span>
+          <!-- HISTÓRICO DE MANUTENÇÃO & FEED DE ATIVIDADES (ULTRA-CLEAN) -->
+          <div class="activity-feed-container">
+            <div class="activity-feed-header">
+              <div class="flex items-center gap-2">
+                <span class="activity-feed-dot"></span>
+                <h3 class="activity-feed-title">Histórico de Atendimento</h3>
+              </div>
+              <span class="activity-feed-count">${t.timeline.length} eventos</span>
             </div>
 
-            <div class="space-y-2 max-h-40 overflow-y-auto pr-1">
-              ${t.timeline.slice().reverse().map((event, idx) => `
-                <div class="flex items-start gap-2 text-xs">
-                  <div class="w-1.5 h-1.5 rounded-full ${idx === 0 ? 'bg-cyan-500' : 'bg-slate-300'} mt-1.5 flex-shrink-0"></div>
-                  <div class="flex-1 min-w-0">
-                    <div class="flex items-center justify-between">
-                      <span class="font-bold text-slate-800">${event.title}</span>
-                      <span class="text-[10px] text-slate-400 font-mono">${event.time}</span>
+            <div class="activity-feed-scroll">
+              <div class="activity-timeline-track">
+                ${t.timeline.slice().reverse().map((event, idx) => `
+                  <div class="activity-timeline-item ${idx === 0 ? 'is-latest' : ''}">
+                    <div class="activity-timeline-node"></div>
+                    <div class="activity-card">
+                      <div class="activity-card-header">
+                        <span class="activity-event-title">${event.title}</span>
+                        <span class="activity-time-pill">${event.time}</span>
+                      </div>
+                      <p class="activity-event-desc">${event.description}</p>
                     </div>
-                    <p class="text-[11px] text-slate-500 leading-tight">${event.description}</p>
                   </div>
-                </div>
-              `).join('')}
+                `).join('')}
+              </div>
             </div>
 
-            <form id="addNoteForm" class="mt-2.5 pt-2 border-t border-slate-100 flex gap-2">
-              <input type="text" id="techNoteInput" placeholder="Adicionar nota técnica..." class="form-input-clean text-xs flex-1" required />
-              <button type="submit" class="btn-stylish btn-fusam-cyan text-xs py-1 px-2.5">
-                ${Icons.send} Registrar
-              </button>
+            <form id="addNoteForm" class="activity-note-form">
+              <div class="activity-input-wrapper">
+                <input type="text" id="techNoteInput" placeholder="Adicionar nota técnica ao chamado..." class="activity-note-input" required />
+                <button type="submit" class="activity-note-btn">
+                  ${Icons.send} Registrar
+                </button>
+              </div>
             </form>
           </div>
 
