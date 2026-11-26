@@ -96,4 +96,4 @@ Projeto tecnológico voltado à inovação, modernização e melhoria dos proces
 **FUSAM — Tecnologia, organização e inovação a serviço da saúde.** 🏥
 
 
-## **Realizado por:** Davi e Enzo, do Gamt
+## 👨‍💻🧑‍💻 **Realizado por:** Davi e Enzo, do Gamt ⚙️
