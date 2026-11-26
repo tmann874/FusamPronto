@@ -5,7 +5,7 @@
 
 ---
 
-## ✨ Destaques Visuais & Funcionais (1000x Cooler)
+## ✨ Destaques Visuais & Funcionais
 
 1. **Estética Cyber-Clínica Minimalista**:
    - Predominantemente branca e limpa com gradientes sutis de azul Fusam (`#0b5cab`) e ciano elétrico (`#06b6d4`).
