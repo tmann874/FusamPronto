@@ -1,75 +1,92 @@
-# 🏥 Fusam Pronto — Sistema de Atendimento e Rastreamento de Reparos Hospitalares
+# 🏥 FUSAM | Sistema Inteligente de Gestão de Reparos Hospitalares
 
-> **1000x Cooler Cyber-Clinical Edition**  
-> Interface predominantemente branca com detalhes em azul royal e ciano elétrico, telemetria em tempo real, motor de navegação Fusam Maps 2.0 (estilo Google Maps), efeitos sonoros táteis e priorização inteligente de emergências médicas.
+**Central de Manutenção, Engenharia Clínica e Rastreamento de Ocorrências**
 
----
+## 📌 Sobre o Projeto
 
-## ✨ Destaques Visuais & Funcionais
+O **FUSAM Reparos Hospitalares** é uma plataforma digital desenvolvida para modernizar e organizar o gerenciamento de manutenções e reparos no ambiente hospitalar da Fundação de Saúde e Assistência do Município de Caçapava (FUSAM), em Caçapava – SP.
 
-1. **Estética Cyber-Clínica Minimalista**:
-   - Predominantemente branca e limpa com gradientes sutis de azul Fusam (`#0b5cab`) e ciano elétrico (`#06b6d4`).
-   - Efeito Glassmorphism de alta tecnologia (`backdrop-filter: blur(20px)`), anel holográfico giratório ao redor do logo oficial da Fusam e cantos arredondados modernos.
-   - Linha de ECG (eletrocardiograma) animada no topo com indicador de telemetria "SISTEMA OPERACIONAL • SLA 100%".
-   - Relógio de telemetria de plantão em tempo real no cabeçalho.
+O sistema permite registrar solicitações de manutenção, acompanhar o andamento dos reparos e identificar ocorrências críticas, proporcionando mais organização, agilidade e transparência nos processos internos do hospital.
 
-2. **Fusam Maps 2.0 (Estilo Google Maps)**:
-   - Motor em HTML5 Canvas de alta performance com visão isométrica 2.5D dos blocos hospitalares (Bloco Cirúrgico, UTI Adulto, Pronto-Socorro, Heliponto H1).
-   - Rota vetorial com feixe de laser animado e setas pulsantes de direção.
-   - Sonar dinâmico no leito de destino e radar giratório no heliponto.
-   - Controles interativos estilo Google Maps: **arrastar/pan**, **zoom (+ / -)**, **botão de recentralizar 🎯** e alternância entre **Planta Arquitetônica** e **Campus 3D**.
-   - Avatar do técnico biomédico com telemetria ao vivo de velocidade e rumo.
+## 🎯 Objetivo
 
-3. **Rastreamento Estilo Delivery (iFood / Uber)**:
-   - Acompanhamento etapa por etapa: *Chamado Aberto ➔ Especialista Alocado ➔ A Caminho ➔ Em Manutenção ➔ Testes & Calibração ➔ Liberado*.
-   - Botão **"Simular Avanço"** para demonstração interativa do progresso em tempo real.
-   - Registro de notas técnicas ao vivo e botão para impressão de Ordem de Serviço (OS).
+Desenvolver uma solução inteligente para centralizar os chamados de manutenção hospitalar, facilitar a comunicação entre os setores e permitir que as equipes responsáveis acompanhem as ocorrências em tempo real.
 
-4. **Motor de Áudio Tátil & Sirene Médica (Web Audio API)**:
-   - Sons sintetizados em tempo real sem arquivos pesados: clique mecânico suave para botões, tom de troca de abas, acorde de sucesso ao liberar equipamento e sirene de dois tons para chamados de Código Vermelho (suporte à vida).
-   - Botão para silenciar/ativar áudio no cabeçalho.
+## ⚙️ Principais Funcionalidades
 
-5. **Caixa de Entrada & Abertura Rápida de Chamados**:
-   - Botão dinâmico flutuante e atalho no cabeçalho para abrir a caixa de mensagens e formulário.
-   - Botões de preenchimento rápido em 1 clique (Respirador UTI, Desfibrilador Sala Vermelha, Vazamento O2, Maca Travada).
-   - Priorização automática de emergências críticas quando marcado equipamento de suporte à vida.
+- **📋 Abertura de Chamados:** registro de novas solicitações de manutenção.
+- **🚨 Código Vermelho:** identificação de equipamentos de suporte à vida ou situações com risco ao paciente.
+- **⏱️ Níveis de Prioridade:** classificação por grau de urgência.
+- **📍 Rastreamento de Reparos:** acompanhamento do andamento das solicitações.
+- **📊 Painel de Ocorrências:** visualização do total de chamados, emergências, reparos em andamento e equipamentos liberados.
+- **🔎 Pesquisa Inteligente:** localização de chamados por equipamento, leito ou identificação.
+- **📨 Central de Avisos:** recebimento de comunicados e notificações.
+- **🛠️ Engenharia Clínica:** organização das solicitações relacionadas aos equipamentos hospitalares.
 
----
+## 🚦 Classificação de Prioridades
 
-## 🚀 Como Executar
+| Prioridade | Prazo de referência (SLA) |
+|---|---|
+| 🚨 Emergência Crítica | Menos de 15 minutos |
+| ⚠️ Urgência Alta | Menos de 1 hora |
+| ⚡ Prioridade Média | Menos de 4 horas |
+| ℹ️ Baixa Prioridade | Até 24 horas |
 
-O projeto é 100% autocontido, sem necessidade de instalar pacotes npm externos.
+*Os prazos apresentados são parâmetros previstos na interface do projeto e não representam uma garantia de atendimento institucional.*
 
-### Opção 1: Execução Direta (Sem Servidor)
-Dê um duplo clique no arquivo [`index.html`](file:///c:/Users/NOTE-GAMTLAB-06/Desktop/FusamPronto/index.html) para abrir diretamente no Google Chrome ou Microsoft Edge via protocolo `file:///`.
+## 🏥 Áreas e Equipamentos
 
-### Opção 2: Servidor Local Node.js
-No terminal, execute:
-```bash
-node server.js
-```
-Em seguida, abra [http://localhost:3000](http://localhost:3000) no seu navegador.
+O sistema contempla exemplos de ocorrências relacionadas a:
 
----
+- Ventiladores mecânicos;
+- Desfibriladores;
+- Sistemas de oxigênio medicinal;
+- Macas hospitalares;
+- Equipamentos de suporte à vida;
+- Estruturas e instalações hospitalares.
 
-## 📁 Estrutura de Arquivos
+## 💻 Tecnologias Utilizadas
 
-```
-FusamPronto/
-├── index.html           # Estrutura principal da aplicação com HUD e modais
-├── README.md            # Documentação completa
-├── server.js            # Servidor HTTP local leve em Node.js nativo
-├── build_bundle.js      # Script de empacotamento unificado
+- **HTML5:** estrutura da aplicação.
+- **CSS3:** identidade visual e responsividade.
+- **JavaScript:** funcionalidades e interatividade.
+
+## 📁 Estrutura do Projeto
+
+```text
+FUSAM-REPAROS/
+│
+├── index.html
+│
 ├── assets/
-│   └── fusam-logo.jpg   # Logo oficial da Fusam
+│   └── fusam-logo.jpg
+│
 ├── css/
-│   └── style.css        # Sistema de design cyber-clínico (1000x cooler)
+│   └── style.css
+│
 └── js/
-    ├── icons.js         # Biblioteca de ícones SVG médicos e UI
-    ├── audio.js         # Sintetizador de áudio Web Audio API (cliques e sirene)
-    ├── data.js          # Dados iniciais de chamados, mensagens e equipamentos
-    ├── map.js           # Motor de navegação Fusam Maps 2.0 (Google Maps Canvas)
-    ├── tracker.js       # Rastreamento de entregas/reparos e controle de etapas
-    ├── app.js           # Orquestrador da aplicação, formulários e relógio
-    └── bundle.js        # Script unificado para compatibilidade offline total
+    └── bundle.js
 ```
+
+## 🌐 Acesso ao Sistema
+
+O projeto poderá ser disponibilizado por meio do GitHub Pages, permitindo o acesso à interface diretamente pelo navegador.
+
+## 🚀 Impacto Esperado
+
+- Maior organização das solicitações de reparo.
+- Identificação mais rápida de ocorrências críticas.
+- Melhor comunicação entre os setores hospitalares.
+- Acompanhamento do andamento das manutenções.
+- Maior controle sobre equipamentos e recursos hospitalares.
+- Apoio à segurança e à continuidade dos serviços de saúde.
+
+## ⚠️ Observação
+
+Este projeto possui finalidade demonstrativa e de desenvolvimento tecnológico. Sua utilização em ambiente hospitalar real depende de validação técnica, implantação de infraestrutura adequada, controle de acesso, proteção de dados e integração com os processos institucionais da FUSAM.
+
+## 👨‍💻 Desenvolvimento
+
+Projeto tecnológico voltado à inovação, modernização e melhoria dos processos de manutenção hospitalar da FUSAM.
+
+**FUSAM — Tecnologia, organização e inovação a serviço da saúde.** 🏥
