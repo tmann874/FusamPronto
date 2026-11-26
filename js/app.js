@@ -145,10 +145,21 @@ class FusamApp {
       banner.classList.remove('hidden');
       const textEl = document.getElementById('emergencyBannerText');
       if (textEl) {
+        const topTicket = activeCritical[0];
         textEl.innerHTML = `
-          <span class="font-extrabold text-red-600 uppercase tracking-wider">🚨 ${activeCritical.length} Alerta de Suporte Vital:</span>
-          <span class="text-slate-800 font-bold ml-1">${activeCritical[0].equipmentName}</span>
-          <span class="text-slate-500 text-[11px] font-mono">(${activeCritical[0].department})</span>
+          <div class="flex items-center gap-2 flex-wrap mb-1">
+            <span class="emergency-badge-code-red">🚨 ${activeCritical.length} CÓDIGO VERMELHO ATIVO</span>
+            <span class="emergency-equip-title">${topTicket.equipmentName}</span>
+            <span class="emergency-pat-tag">Pat: ${topTicket.patrimony || 'PAT-003190'}</span>
+            <span class="emergency-sector-tag">${topTicket.department}</span>
+          </div>
+          <div class="flex items-center gap-2 flex-wrap text-xs text-slate-600">
+            <span class="emergency-sla-tag">⏱️ SLA Resposta: &lt; ${topTicket.estimatedMinutesRemaining || 15} min</span>
+            <span class="text-slate-300">•</span>
+            <span class="emergency-tech-tag">👨‍🔬 ${topTicket.technician?.name || 'Técnico Biomédico em Deslocamento'}</span>
+            <span class="text-slate-300">•</span>
+            <span class="text-slate-500 text-[11px] font-mono">Local: ${topTicket.sectorLocation}</span>
+          </div>
         `;
       }
 
@@ -322,21 +333,51 @@ class FusamApp {
 
     if (this.inbox.length === 0) {
       listEl.innerHTML = `
-        <div class="p-6 text-center text-slate-400 text-xs">
-          ${Icons.inbox} Nenhuma mensagem.
+        <div class="p-8 text-center bg-slate-50 rounded-2xl border border-slate-200/80">
+          <div class="w-12 h-12 mx-auto mb-2 text-cyan-600 bg-cyan-50 rounded-full flex items-center justify-center">
+            ${Icons.inbox}
+          </div>
+          <h4 class="text-sm font-bold text-slate-800">Caixa de entrada vazia</h4>
+          <p class="text-xs text-slate-400 mt-1">Nenhum comunicado da central no momento.</p>
         </div>
       `;
       return;
     }
 
+    const priorityBadge = (priority) => {
+      if (priority === 'critical') {
+        return `<span class="badge-clean critical">🚨 Prioridade Máxima</span>`;
+      } else if (priority === 'high' || priority === 'medium') {
+        return `<span class="badge-clean medium">⚡ Engenharia Clínica</span>`;
+      } else {
+        return `<span class="badge-clean low">ℹ️ Informativo</span>`;
+      }
+    };
+
     listEl.innerHTML = this.inbox.map(m => `
-      <div class="p-3.5 rounded-2xl border border-slate-200/80 bg-white hover:border-cyan-400 shadow-sm transition-all cursor-pointer">
-        <div class="flex items-center justify-between text-[11px] text-slate-400 mb-1">
-          <span class="font-bold text-slate-800">${m.sender}</span>
-          <span class="font-mono text-[10px]">${m.time}</span>
+      <div class="inbox-msg-card ${m.priority || 'medium'}" data-msg-id="${m.id}">
+        <div class="flex items-center justify-between flex-wrap gap-2 mb-1.5">
+          <div class="flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-cyan-50 border border-cyan-200 text-cyan-700 flex items-center justify-center text-xs font-bold">
+              ${m.priority === 'critical' ? '🚨' : (m.priority === 'medium' ? '⚙️' : '📢')}
+            </span>
+            <div>
+              <span class="font-extrabold text-xs text-slate-900">${m.sender}</span>
+              <div class="text-[10px] text-slate-400 font-mono">${m.time}</div>
+            </div>
+          </div>
+          ${priorityBadge(m.priority)}
         </div>
-        <h4 class="text-xs font-bold text-slate-900 mb-1">${m.subject}</h4>
-        <p class="text-[11px] text-slate-500 leading-relaxed">${m.content}</p>
+
+        <h4 class="text-xs font-bold text-slate-900 mt-2 mb-1 leading-snug">${m.subject}</h4>
+        <p class="text-xs text-slate-600 leading-relaxed">${m.content}</p>
+
+        <div class="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
+          <span class="flex items-center gap-1 text-cyan-700 font-semibold">
+            ${Icons.checkCircle} Comunicado Oficial Fusam
+          </span>
+          <span class="text-slate-400 text-[10px] font-mono">${m.id}</span>
+        </div>
       </div>
     `).join('');
   }
@@ -367,6 +408,9 @@ class FusamApp {
     const contentCreate = document.getElementById('inboxContentCreate');
     const contentMessages = document.getElementById('inboxContentMessages');
     const pinnedFooter = document.querySelector('.modal-pinned-footer');
+    const modalTitle = document.getElementById('modalHeaderTitle');
+    const modalSubtitle = document.getElementById('modalHeaderSubtitle');
+    const modalBadge = document.getElementById('modalIconBadge');
 
     if (tab === 'create') {
       tabCreate?.classList.add('active');
@@ -374,12 +418,24 @@ class FusamApp {
       contentCreate?.classList.remove('hidden');
       contentMessages?.classList.add('hidden');
       if (pinnedFooter) pinnedFooter.style.display = 'flex';
+
+      if (modalTitle) modalTitle.textContent = 'Nova Solicitação de Manutenção';
+      if (modalSubtitle) modalSubtitle.textContent = 'Pronto-Socorro & Engenharia Clínica Fusam';
+      if (modalBadge) {
+        modalBadge.innerHTML = `<svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>`;
+      }
     } else {
       tabMessages?.classList.add('active');
       tabCreate?.classList.remove('active');
       contentMessages?.classList.remove('hidden');
       contentCreate?.classList.add('hidden');
       if (pinnedFooter) pinnedFooter.style.display = 'none';
+
+      if (modalTitle) modalTitle.textContent = 'Caixa de Entrada & Avisos da Central';
+      if (modalSubtitle) modalSubtitle.textContent = 'Comunicados oficiais, diretoria e despachos biomédicos';
+      if (modalBadge) {
+        modalBadge.innerHTML = `<svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>`;
+      }
     }
   }
 
@@ -425,9 +481,15 @@ class FusamApp {
     };
 
     if (priority === 'critical') {
-      audioEngine.playUrgentSiren();
+      audioEngine.playDispatchWhoosh();
+      setTimeout(() => {
+        audioEngine.playUrgentSiren();
+      }, 250);
     } else {
-      audioEngine.playSuccess();
+      audioEngine.playDispatchWhoosh();
+      setTimeout(() => {
+        audioEngine.playSuccess();
+      }, 200);
     }
 
     this.tickets.unshift(newTicket);
@@ -440,14 +502,38 @@ class FusamApp {
   }
 
   bindGlobalEvents() {
-    const openInboxHeaderBtn = document.getElementById('openInboxHeaderBtn');
-    if (openInboxHeaderBtn) {
-      openInboxHeaderBtn.onclick = () => this.openInboxModal('create');
+    // Telemetria ECG interativa: clique para ouvir batimentos cardíacos simulados
+    const ecgBadge = document.getElementById('telemetryEcgBadge');
+    if (ecgBadge) {
+      ecgBadge.onclick = () => {
+        ecgBadge.classList.add('ecg-beating');
+        audioEngine.playHeartbeatPulse();
+        setTimeout(() => ecgBadge.classList.remove('ecg-beating'), 1400);
+      };
     }
 
+    // Botão Caixa de Entrada no cabeçalho: abre diretamente a tela de Mensagens/Avisos
+    const openInboxHeaderBtn = document.getElementById('openInboxHeaderBtn');
+    if (openInboxHeaderBtn) {
+      openInboxHeaderBtn.onclick = () => this.openInboxModal('messages');
+    }
+
+    // Botão Novo Chamado no cabeçalho: abre diretamente o formulário de abertura de chamado
+    const openNewTicketHeaderBtn = document.getElementById('openNewTicketHeaderBtn');
+    if (openNewTicketHeaderBtn) {
+      openNewTicketHeaderBtn.onclick = () => this.openInboxModal('create');
+    }
+
+    // Botão flutuante inferior: abre formulário de nova solicitação
     const floatingActionBtn = document.getElementById('floatingNewTicketBtn');
     if (floatingActionBtn) {
       floatingActionBtn.onclick = () => this.openInboxModal('create');
+    }
+
+    // Atalho dentro da tela da Caixa de Entrada para abrir nova solicitação
+    const inboxNewTicketShortcutBtn = document.getElementById('inboxNewTicketShortcutBtn');
+    if (inboxNewTicketShortcutBtn) {
+      inboxNewTicketShortcutBtn.onclick = () => this.switchInboxTab('create');
     }
 
     const closeInboxBtn = document.getElementById('closeInboxModalBtn');
@@ -481,15 +567,23 @@ class FusamApp {
 
     if (catSelect && prioritySelect && lifeSupportCheckbox) {
       catSelect.onchange = () => {
-        audioEngine.playClick();
+        if (!catSelect.value) {
+          audioEngine.playClick();
+          return;
+        }
+
+        // Tocar som biomédico distintivo e com diversidade conforme o equipamento selecionado
+        audioEngine.playEquipmentSelect(catSelect.value || 'general');
+
         const selectedOpt = catSelect.options[catSelect.selectedIndex];
-        const isLife = selectedOpt.getAttribute('data-lifesupport') === 'true';
+        const isLife = selectedOpt && selectedOpt.getAttribute('data-lifesupport') === 'true';
         if (isLife) {
           lifeSupportCheckbox.checked = true;
           prioritySelect.value = 'critical';
           const alertHelp = document.getElementById('lifeSupportAlert');
           if (alertHelp) alertHelp.classList.remove('hidden');
-          audioEngine.playUrgentSiren();
+          // Alerta sonoro de emergência médica logo após o bip do aparelho
+          setTimeout(() => audioEngine.playUrgentSiren(), 180);
         } else {
           lifeSupportCheckbox.checked = false;
           const alertHelp = document.getElementById('lifeSupportAlert');
@@ -523,11 +617,15 @@ class FusamApp {
       };
     });
 
-    // Dropdown de Categoria
+    // Dropdown de Categoria (Filtro Superior) - Som de Equipamento
     const filterCatSelect = document.getElementById('filterCategorySelect');
     if (filterCatSelect) {
       filterCatSelect.onchange = (e) => {
-        audioEngine.playClick();
+        if (e.target.value !== 'all') {
+          audioEngine.playEquipmentSelect(e.target.value);
+        } else {
+          audioEngine.playClick();
+        }
         this.categoryFilter = e.target.value;
         this.renderTickets();
       };
@@ -547,18 +645,24 @@ class FusamApp {
     if (soundToggleBtn) {
       soundToggleBtn.onclick = () => {
         this.soundActive = audioEngine.toggleSound();
-        soundToggleBtn.innerHTML = this.soundActive ? `${Icons.volume2} Som: Ativado` : `${Icons.volumeX} Som: Silenciado`;
+        soundToggleBtn.classList.toggle('sound-muted', !this.soundActive);
+        const spanText = soundToggleBtn.querySelector('span');
+        if (spanText) {
+          spanText.textContent = this.soundActive ? 'Som: Ativado' : 'Som: Silenciado';
+        }
         soundToggleBtn.classList.toggle('text-slate-400', !this.soundActive);
       };
     }
 
-    // Presets rápidos no formulário
+    // Presets rápidos no formulário (Preenchimento em 1 clique) - Som Biomédico com Assinatura do Aparelho
     const presetButtons = document.querySelectorAll('.quick-preset-btn');
     presetButtons.forEach(btn => {
       btn.onclick = () => {
-        audioEngine.playClick();
+        const cat = btn.getAttribute('data-cat') || 'general';
+        // Tocar som biomédico específico com rica diversidade sonora
+        audioEngine.playEquipmentSelect(cat);
+
         const title = btn.getAttribute('data-title');
-        const cat = btn.getAttribute('data-cat');
         const dept = btn.getAttribute('data-dept');
         const desc = btn.getAttribute('data-desc');
         const equip = btn.getAttribute('data-equip');

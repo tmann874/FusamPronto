@@ -53,6 +53,7 @@ export class RepairTracker {
     this.autoSimTimer = null;
     this.modalEl = null;
     this.hospitalMap = null;
+    this.confettiAnimFrame = null;
   }
 
   init() {
@@ -87,6 +88,7 @@ export class RepairTracker {
       this.hospitalMap.destroy();
       this.hospitalMap = null;
     }
+    this.stopConfettiVFX();
     if (this.modalEl) {
       this.modalEl.classList.add('hidden');
       document.body.classList.remove('overflow-hidden');
@@ -101,21 +103,161 @@ export class RepairTracker {
 
   advanceStep() {
     if (!this.currentTicket) return;
-    audioEngine.playClick();
     const curIdx = this.getCurrentStepIndex();
     if (curIdx < TRACKING_STEPS.length - 1) {
       const nextStep = TRACKING_STEPS[curIdx + 1];
-      this.updateStatus(nextStep.key);
+      if (nextStep.key === 'completed') {
+        // Clicando para a etapa final: aciona a celebração completa com confetes e fanfarra
+        this.updateStatus('completed');
+      } else {
+        audioEngine.playStepAdvance();
+        this.updateStatus(nextStep.key);
+      }
     }
   }
 
   regressStep() {
     if (!this.currentTicket) return;
-    audioEngine.playClick();
+    audioEngine.playStepRegress();
     const curIdx = this.getCurrentStepIndex();
     if (curIdx > 0) {
       const prevStep = TRACKING_STEPS[curIdx - 1];
       this.updateStatus(prevStep.key);
+    }
+  }
+
+  /**
+   * Dispara o efeito comemorativo completo: SFX de vitória + VFX de confetes em tela cheia
+   */
+  triggerConfetti() {
+    audioEngine.playConfettiCelebration();
+    this.launchConfettiVFX();
+  }
+
+  launchConfettiVFX() {
+    this.stopConfettiVFX();
+
+    let canvas = document.getElementById('fusamConfettiCanvas');
+    if (!canvas) {
+      canvas = document.createElement('canvas');
+      canvas.id = 'fusamConfettiCanvas';
+      canvas.style.position = 'fixed';
+      canvas.style.top = '0';
+      canvas.style.left = '0';
+      canvas.style.width = '100vw';
+      canvas.style.height = '100vh';
+      canvas.style.pointerEvents = 'none';
+      canvas.style.zIndex = '99999';
+      document.body.appendChild(canvas);
+    }
+
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const colors = [
+      '#06b6d4', // Cyan elétrico Fusam
+      '#0284c7', // Azul Hospitalar Fusam
+      '#10b981', // Verde Esmeralda Sucesso
+      '#f59e0b', // Dourado Celebração
+      '#ec4899', // Rosa Magenta
+      '#8b5cf6', // Violeta
+      '#38bdf8'  // Azul Celeste
+    ];
+
+    const particleCount = 150;
+    const particles = [];
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height * 0.32;
+
+    for (let i = 0; i < particleCount; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const velocity = 8 + Math.random() * 15;
+      particles.push({
+        x: centerX + (Math.random() - 0.5) * 200,
+        y: centerY + (Math.random() - 0.5) * 80,
+        vx: Math.cos(angle) * velocity,
+        vy: Math.sin(angle) * velocity - 5,
+        gravity: 0.28 + Math.random() * 0.16,
+        friction: 0.98,
+        wobble: Math.random() * 10,
+        wobbleSpeed: 0.08 + Math.random() * 0.06,
+        size: 7 + Math.random() * 7,
+        width: 6 + Math.random() * 9,
+        height: 10 + Math.random() * 9,
+        rotation: Math.random() * 360,
+        rotationSpeed: (Math.random() - 0.5) * 10,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        opacity: 1,
+        shape: Math.random() > 0.4 ? 'rect' : (Math.random() > 0.5 ? 'circle' : 'ribbon')
+      });
+    }
+
+    const startTime = performance.now();
+    const duration = 3800;
+
+    const animate = (currentTime) => {
+      const elapsed = currentTime - startTime;
+      if (elapsed > duration) {
+        this.stopConfettiVFX();
+        return;
+      }
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      particles.forEach(p => {
+        p.vx *= p.friction;
+        p.vy *= p.friction;
+        p.vy += p.gravity;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.wobble += p.wobbleSpeed;
+        p.rotation += p.rotationSpeed;
+
+        if (elapsed > duration * 0.65) {
+          p.opacity = Math.max(0, 1 - (elapsed - duration * 0.65) / (duration * 0.35));
+        }
+
+        ctx.save();
+        ctx.globalAlpha = p.opacity;
+        ctx.fillStyle = p.color;
+        ctx.strokeStyle = p.color;
+
+        const wobbleX = p.x + Math.sin(p.wobble) * 8;
+        ctx.translate(wobbleX, p.y);
+        ctx.rotate((p.rotation * Math.PI) / 180);
+
+        if (p.shape === 'circle') {
+          ctx.beginPath();
+          ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (p.shape === 'ribbon') {
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.moveTo(-p.width / 2, -p.height / 2);
+          ctx.quadraticCurveTo(0, p.height / 4, p.width / 2, p.height / 2);
+          ctx.stroke();
+        } else {
+          ctx.fillRect(-p.width / 2, -p.height / 2, p.width, p.height);
+        }
+
+        ctx.restore();
+      });
+
+      this.confettiAnimFrame = requestAnimationFrame(animate);
+    };
+
+    this.confettiAnimFrame = requestAnimationFrame(animate);
+  }
+
+  stopConfettiVFX() {
+    if (this.confettiAnimFrame) {
+      cancelAnimationFrame(this.confettiAnimFrame);
+      this.confettiAnimFrame = null;
+    }
+    const canvas = document.getElementById('fusamConfettiCanvas');
+    if (canvas && canvas.parentNode) {
+      canvas.parentNode.removeChild(canvas);
     }
   }
 
@@ -142,7 +284,8 @@ export class RepairTracker {
     if (newStatusKey === 'completed') {
       this.currentTicket.estimatedMinutesRemaining = 0;
       if (this.currentTicket.technician) this.currentTicket.technician.eta = "Concluído";
-      audioEngine.playSuccess();
+      // Disparo automático de confetes e áudio ao concluir chamado
+      this.triggerConfetti();
     } else if (newStatusKey === 'testing') {
       this.currentTicket.estimatedMinutesRemaining = 5;
     } else if (newStatusKey === 'in_repair') {
@@ -207,7 +350,7 @@ export class RepairTracker {
 
   addTechnicianNote(noteText) {
     if (!this.currentTicket || !noteText.trim()) return;
-    audioEngine.playClick();
+    audioEngine.playNoteAdded();
     const now = new Date();
     const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
     
@@ -291,6 +434,21 @@ export class RepairTracker {
         <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden mt-3">
           <div class="h-full bg-gradient-to-r from-cyan-600 to-cyan-400 rounded-full transition-all duration-500" style="width: ${progressPercent}%;"></div>
         </div>
+
+        ${t.status === 'completed' ? `
+          <div class="celebration-hero-pill">
+            <div class="flex items-center gap-2.5">
+              <span class="text-xl">🎉</span>
+              <div>
+                <div class="font-extrabold text-xs text-emerald-950 uppercase tracking-wider">Equipamento Liberado & Certificado!</div>
+                <div class="text-[11px] text-emerald-700">Controle de qualidade concluído e laudo emitido com sucesso.</div>
+              </div>
+            </div>
+            <button id="triggerConfettiAgainBtn" class="btn-stylish btn-fusam-cyan text-xs py-1 px-3 ml-auto">
+              🎉 Soltar Confetes
+            </button>
+          </div>
+        ` : ''}
       </div>
 
       <!-- STEPPER HORIZONTAL -->
@@ -461,7 +619,10 @@ export class RepairTracker {
 
     const callBtn = document.getElementById('callTechBtn');
     if (callBtn) {
-      callBtn.onclick = () => audioEngine.playClick();
+      callBtn.onclick = (e) => {
+        e.preventDefault();
+        audioEngine.playRadioComm();
+      };
     }
 
     const noteForm = document.getElementById('addNoteForm');
@@ -483,5 +644,24 @@ export class RepairTracker {
         window.print();
       };
     }
+
+    const confettiBtn = document.getElementById('triggerConfettiAgainBtn');
+    if (confettiBtn) {
+      confettiBtn.onclick = () => this.triggerConfetti();
+    }
+
+    const stepNodes = document.querySelectorAll('.step-node');
+    stepNodes.forEach((node, idx) => {
+      node.style.cursor = 'pointer';
+      node.title = `Ir para: ${TRACKING_STEPS[idx].title}`;
+      node.onclick = () => {
+        if (idx === TRACKING_STEPS.length - 1) {
+          this.updateStatus(TRACKING_STEPS[idx].key);
+        } else {
+          audioEngine.playStepAdvance();
+          this.updateStatus(TRACKING_STEPS[idx].key);
+        }
+      };
+    });
   }
 }

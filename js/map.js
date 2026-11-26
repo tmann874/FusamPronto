@@ -4,6 +4,8 @@
  * rota de laser com setas direcionais animadas, sonar de emergência e HUD de telemetria.
  */
 
+import { audioEngine } from './audio.js';
+
 export class GoogleStyleHospitalMap {
   constructor(canvasContainerId, options = {}) {
     this.container = typeof canvasContainerId === 'string' 
@@ -140,18 +142,22 @@ export class GoogleStyleHospitalMap {
     // Eventos dos Controles
     controls.querySelector('#mapZoomIn').onclick = (e) => {
       e.stopPropagation();
+      audioEngine.playRadarScan();
       this.zoomAt(1.25);
     };
     controls.querySelector('#mapZoomOut').onclick = (e) => {
       e.stopPropagation();
+      audioEngine.playRadarScan();
       this.zoomAt(0.8);
     };
     controls.querySelector('#mapRecenter').onclick = (e) => {
       e.stopPropagation();
+      audioEngine.playRadarScan();
       this.recenter();
     };
     topBar.querySelector('#mapToggleFloor').onclick = (e) => {
       e.stopPropagation();
+      audioEngine.playTabSwitch();
       this.isFloorPlan = !this.isFloorPlan;
       const lbl = topBar.querySelector('#mapModeLabel');
       if (lbl) lbl.textContent = this.isFloorPlan ? 'Vista Campus 3D' : 'Planta Arquitetônica';

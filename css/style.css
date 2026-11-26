@@ -188,6 +188,64 @@ svg.lucide {
   padding: 2px 8px;
   border-radius: var(--radius-pill);
   box-shadow: 0 1px 4px rgba(6, 182, 212, 0.1);
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.fusam-telemetry-badge:hover {
+  background: #ccfbf1;
+  border-color: #06b6d4;
+  box-shadow: 0 0 14px rgba(6, 182, 212, 0.45);
+  transform: scale(1.05);
+}
+
+.fusam-telemetry-badge:active {
+  transform: scale(0.95);
+}
+
+.ecg-beating .ecg-line {
+  stroke: #10b981 !important;
+  filter: drop-shadow(0 0 8px #10b981);
+  animation: ecgBeatFast 0.45s ease-in-out 3 !important;
+}
+
+@keyframes ecgBeatFast {
+  0% { stroke-dashoffset: 40; }
+  50% { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: -40; }
+}
+
+/* Equalizador Visualizador de Áudio no Header */
+.mini-equalizer-bars {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 11px;
+  margin-left: 4px;
+}
+
+.eq-bar {
+  width: 2.5px;
+  background: #06b6d4;
+  border-radius: 2px;
+  transition: height 0.15s ease;
+}
+
+.eq-bar.bar-1 { height: 4px; animation: eqAnim 0.7s infinite alternate ease-in-out; }
+.eq-bar.bar-2 { height: 11px; animation: eqAnim 0.5s infinite alternate ease-in-out 0.15s; }
+.eq-bar.bar-3 { height: 7px; animation: eqAnim 0.8s infinite alternate ease-in-out 0.3s; }
+.eq-bar.bar-4 { height: 5px; animation: eqAnim 0.6s infinite alternate ease-in-out 0.2s; }
+
+@keyframes eqAnim {
+  0% { height: 3px; background: #0891b2; }
+  50% { height: 11px; background: #06b6d4; }
+  100% { height: 5px; background: #0284c7; }
+}
+
+.sound-muted .mini-equalizer-bars .eq-bar {
+  animation: none !important;
+  height: 2px !important;
+  background: #94a3b8 !important;
 }
 
 /* Linha de ECG (Batimento Cardíaco Animado) */
@@ -209,10 +267,10 @@ svg.lucide {
 }
 
 /* ==========================================================================
-   ALERTA DE EMERGÊNCIA CRÍTICA HOLOGRÁFICO (CÓDIGO VERMELHO)
+   ALERTA DE EMERGÊNCIA CRÍTICA HOLOGRÁFICO (CENTRAL HUD CÓDIGO VERMELHO)
    ========================================================================== */
 .emergency-pill-wrapper {
-  margin: 1rem auto 0;
+  margin: 1.25rem auto 0;
   max-width: 1240px;
   padding: 0 1.25rem;
   animation: slideDownFade 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -224,15 +282,15 @@ svg.lucide {
 }
 
 .emergency-pill-banner {
-  background: linear-gradient(135deg, #ffffff 0%, #fff5f5 100%);
-  border: 1px solid rgba(225, 29, 72, 0.3);
-  border-radius: var(--radius-pill);
-  padding: 0.55rem 1.25rem;
+  background: linear-gradient(135deg, #ffffff 0%, #fff1f2 100%);
+  border: 1.5px solid #fca5a5;
+  border-radius: 20px;
+  padding: 0.95rem 1.4rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  box-shadow: 0 8px 24px -4px rgba(225, 29, 72, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  gap: 1.25rem;
+  box-shadow: 0 10px 30px -5px rgba(225, 29, 72, 0.22), 0 0 0 1px rgba(225, 29, 72, 0.08);
   position: relative;
   overflow: hidden;
 }
@@ -244,8 +302,8 @@ svg.lucide {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(225, 29, 72, 0.08), transparent);
-  animation: sweepAlert 3s infinite;
+  background: linear-gradient(90deg, transparent, rgba(225, 29, 72, 0.12), transparent);
+  animation: sweepAlert 2.8s infinite;
 }
 
 @keyframes sweepAlert {
@@ -254,18 +312,19 @@ svg.lucide {
 }
 
 .emergency-pill-dot {
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   background-color: var(--red-critical);
-  box-shadow: 0 0 12px var(--red-critical);
+  box-shadow: 0 0 14px var(--red-critical);
   position: relative;
+  flex-shrink: 0;
 }
 
 .emergency-pill-dot::after {
   content: '';
   position: absolute;
-  inset: -4px;
+  inset: -5px;
   border-radius: 50%;
   border: 2px solid var(--red-critical);
   animation: pingDot 1.4s infinite;
@@ -273,59 +332,191 @@ svg.lucide {
 
 @keyframes pingDot {
   0% { transform: scale(0.8); opacity: 1; }
-  100% { transform: scale(2); opacity: 0; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+.emergency-equip-title {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.emergency-badge-code-red {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: #dc2626;
+  color: white;
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 0.2rem 0.65rem;
+  border-radius: 9999px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  box-shadow: 0 0 10px rgba(220, 38, 38, 0.4);
+}
+
+.emergency-sector-tag {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #991b1b;
+  background: #fee2e2;
+  padding: 0.15rem 0.55rem;
+  border-radius: 6px;
+  border: 1px solid #fecdd3;
+}
+
+.emergency-pat-tag {
+  font-size: 0.7rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  color: #475569;
+  background: #f1f5f9;
+  padding: 0.12rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+}
+
+.emergency-tech-tag {
+  font-size: 0.72rem;
+  color: #334155;
+  background: white;
+  padding: 0.15rem 0.55rem;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.emergency-sla-tag {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #b91c1c;
+  background: #fff;
+  border: 1px solid #fca5a5;
+  padding: 0.15rem 0.55rem;
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace;
 }
 
 /* ==========================================================================
-   METRICS HUD / TICKER DE TELEMETRIA
+   METRICS COMMAND GRID / PAINEL DE TELEMETRIA HOSPITALAR (1000x COOLER)
    ========================================================================== */
-.metrics-pill-bar {
-  display: flex;
-  align-items: center;
+.metrics-command-grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
   gap: 0.85rem;
-  overflow-x: auto;
-  padding: 0.4rem 0.2rem;
-  margin-bottom: 1.5rem;
-  scrollbar-width: none;
+  margin-bottom: 1rem;
 }
 
-.metrics-pill-bar::-webkit-scrollbar {
-  display: none;
+@media (min-width: 640px) {
+  .metrics-command-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
-.metric-pill {
-  background: white;
-  border: 1px solid rgba(226, 232, 240, 0.9);
-  padding: 0.5rem 1.15rem;
-  border-radius: var(--radius-pill);
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  font-weight: 500;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
-  white-space: nowrap;
+@media (min-width: 1024px) {
+  .metrics-command-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.metric-card {
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  border-radius: 18px;
+  padding: 1rem 1.15rem;
+  box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.04);
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
   cursor: default;
 }
 
-.metric-pill:hover {
-  border-color: var(--fusam-cyan);
+.metric-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(6, 182, 212, 0.12);
+  border-color: #06b6d4;
+  box-shadow: 0 8px 24px -4px rgba(6, 182, 212, 0.15);
 }
 
-.metric-pill-val {
-  font-weight: 800;
+.metric-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.4rem;
+}
+
+.metric-card-title {
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+}
+
+.metric-card-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 1rem;
-  color: var(--text-primary);
-  font-variant-numeric: tabular-nums;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
 }
 
-.metric-pill-val.critical { color: var(--red-critical); }
-.metric-pill-val.cyan { color: var(--fusam-cyan-dark); }
-.metric-pill-val.green { color: var(--green-status); }
+.metric-card-val {
+  font-size: 1.65rem;
+  font-weight: 900;
+  font-family: 'JetBrains Mono', monospace;
+  color: #0f172a;
+  line-height: 1.1;
+}
+
+.metric-card-val.critical { color: var(--red-critical); }
+.metric-card-val.cyan { color: var(--fusam-cyan-dark); }
+.metric-card-val.green { color: var(--green-status); }
+
+.metric-card-sub {
+  font-size: 0.7rem;
+  color: #64748b;
+  margin-top: 0.35rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+/* HOSPITAL OPERATIONAL STATUS STRIP */
+.hospital-status-strip {
+  background: linear-gradient(135deg, #f8fafc 0%, #ecfeff 100%);
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 0.6rem 1.15rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  font-size: 0.73rem;
+  color: #475569;
+}
+
+.status-strip-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.status-strip-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #10b981;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
+}
 
 /* ==========================================================================
    SEGMENTED CONTROLS & CONTROLE DE BUSCA
@@ -1407,4 +1598,72 @@ svg.lucide {
 .activity-note-btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 10px rgba(6, 182, 212, 0.3);
+}
+
+/* ==========================================================================
+   CAIXA DE ENTRADA & COMUNICADOS HOSPITALARES (NOVA TELA DEDICADA)
+   ========================================================================== */
+.inbox-banner-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, #ecfeff 0%, #f0fdf4 100%);
+  border: 1px solid #cffafe;
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.85rem;
+}
+
+.inbox-msg-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 1rem 1.15rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.inbox-msg-card:hover {
+  border-color: #06b6d4;
+  box-shadow: 0 4px 16px rgba(6, 182, 212, 0.12);
+  transform: translateY(-1px);
+}
+
+.inbox-msg-card.critical {
+  border-left: 4px solid #ef4444;
+  background: linear-gradient(to right, #fff1f2 0%, #ffffff 18%);
+}
+
+.inbox-msg-card.medium,
+.inbox-msg-card.high {
+  border-left: 4px solid #0284c7;
+  background: linear-gradient(to right, #f0f9ff 0%, #ffffff 18%);
+}
+
+.inbox-msg-card.low {
+  border-left: 4px solid #10b981;
+  background: linear-gradient(to right, #f0fdf4 0%, #ffffff 18%);
+}
+
+/* ==========================================================================
+   BANNER DE CELEBRAÇÃO & LIBERAÇÃO FINAL NO RASTREADOR (CONFETTI VFX)
+   ========================================================================== */
+.celebration-hero-pill {
+  margin-top: 0.85rem;
+  padding: 0.75rem 1rem;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #ecfdf5 0%, #f0fdfa 100%);
+  border: 1px solid #a7f3d0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.12);
+  animation: celebrationPulse 2s infinite ease-in-out;
+}
+
+@keyframes celebrationPulse {
+  0%, 100% { box-shadow: 0 4px 14px rgba(16, 185, 129, 0.12); }
+  50% { box-shadow: 0 4px 20px rgba(16, 185, 129, 0.28); }
 }

@@ -250,7 +250,9 @@ class FusamAudioEngine {
   }
 
   /**
-   * Pequena sirene médica de urgência (tom duplo alternado suave e realista)
+   * Sirene médica de emergência de alta fidelidade (100% eletrônica, autêntica e tática)
+   * Sequência clínica: Bipe duplo rápido de alta frequência (Crash-Cart DEA) seguido por
+   * sirene modulada de telemetria hospitalar (988Hz <-> 784Hz <-> 1046Hz).
    */
   playUrgentSiren() {
     if (!this.enabled) return;
@@ -260,44 +262,225 @@ class FusamAudioEngine {
     try {
       const now = this.audioCtx.currentTime;
 
-      // Ciclo 1: Tom agudo de alarme hospitalar (880Hz)
+      // 1. PRIMEIRO BIPE DE ALARME DE EMERGÊNCIA (988Hz - B5 com rampa harmônica)
       const osc1 = this.audioCtx.createOscillator();
       const gain1 = this.audioCtx.createGain();
       osc1.type = 'sine';
-      osc1.frequency.setValueAtTime(880, now);
+      osc1.frequency.setValueAtTime(987.77, now);
+      osc1.frequency.exponentialRampToValueAtTime(1174.66, now + 0.11);
       gain1.gain.setValueAtTime(0, now);
-      gain1.gain.linearRampToValueAtTime(0.12, now + 0.02);
-      gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
+      gain1.gain.linearRampToValueAtTime(0.22, now + 0.015);
+      gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
       osc1.connect(gain1);
       gain1.connect(this.audioCtx.destination);
       osc1.start(now);
-      osc1.stop(now + 0.18);
+      osc1.stop(now + 0.13);
 
-      // Ciclo 2: Tom de resposta (698Hz - F5)
+      // 2. SEGUNDO BIPE RÁPIDO DE EMERGÊNCIA (180ms depois)
       const osc2 = this.audioCtx.createOscillator();
       const gain2 = this.audioCtx.createGain();
       osc2.type = 'sine';
-      osc2.frequency.setValueAtTime(698, now + 0.18);
+      osc2.frequency.setValueAtTime(987.77, now + 0.18);
+      osc2.frequency.exponentialRampToValueAtTime(1174.66, now + 0.29);
       gain2.gain.setValueAtTime(0, now + 0.18);
-      gain2.gain.linearRampToValueAtTime(0.12, now + 0.20);
-      gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.36);
+      gain2.gain.linearRampToValueAtTime(0.24, now + 0.195);
+      gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.30);
       osc2.connect(gain2);
       gain2.connect(this.audioCtx.destination);
       osc2.start(now + 0.18);
-      osc2.stop(now + 0.36);
+      osc2.stop(now + 0.31);
 
-      // Ciclo 3: Segundo pulso agudo para reforçar urgência
-      const osc3 = this.audioCtx.createOscillator();
-      const gain3 = this.audioCtx.createGain();
-      osc3.type = 'triangle';
-      osc3.frequency.setValueAtTime(987, now + 0.38);
-      gain3.gain.setValueAtTime(0, now + 0.38);
-      gain3.gain.linearRampToValueAtTime(0.15, now + 0.40);
-      gain3.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
-      osc3.connect(gain3);
-      gain3.connect(this.audioCtx.destination);
-      osc3.start(now + 0.38);
-      osc3.stop(now + 0.55);
+      // 3. SIRENE HOSPITALAR MODULADA E RESSONANTE (Alternância médica 784Hz <-> 1046Hz)
+      const tones = [
+        { freq: 1046.50, start: 0.36, dur: 0.14 }, // C6
+        { freq: 783.99,  start: 0.50, dur: 0.14 }, // G5
+        { freq: 1046.50, start: 0.64, dur: 0.14 }, // C6
+        { freq: 880.00,  start: 0.78, dur: 0.22 }  // A5 com cauda de ressonância
+      ];
+
+      tones.forEach(t => {
+        const osc = this.audioCtx.createOscillator();
+        const gain = this.audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(t.freq, now + t.start);
+        gain.gain.setValueAtTime(0, now + t.start);
+        gain.gain.linearRampToValueAtTime(0.18, now + t.start + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + t.start + t.dur);
+        osc.connect(gain);
+        gain.connect(this.audioCtx.destination);
+        osc.start(now + t.start);
+        osc.stop(now + t.start + t.dur + 0.01);
+      });
+    } catch (e) {}
+  }
+
+  /**
+   * Batimento cardíaco de telemetria médica (Lub-Dub do monitor hospitalar)
+   */
+  playHeartbeatPulse() {
+    if (!this.enabled) return;
+    this.init();
+    if (!this.audioCtx) return;
+
+    try {
+      const now = this.audioCtx.currentTime;
+
+      // Primeiro tom do batimento: Lub (grave suave 60Hz)
+      const osc1 = this.audioCtx.createOscillator();
+      const gain1 = this.audioCtx.createGain();
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(75, now);
+      osc1.frequency.exponentialRampToValueAtTime(45, now + 0.07);
+      gain1.gain.setValueAtTime(0.22, now);
+      gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
+      osc1.connect(gain1);
+      gain1.connect(this.audioCtx.destination);
+      osc1.start(now);
+      osc1.stop(now + 0.075);
+
+      // Segundo tom do batimento: Dub (95Hz, 110ms depois)
+      const osc2 = this.audioCtx.createOscillator();
+      const gain2 = this.audioCtx.createGain();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(105, now + 0.11);
+      osc2.frequency.exponentialRampToValueAtTime(55, now + 0.19);
+      gain2.gain.setValueAtTime(0.18, now + 0.11);
+      gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.19);
+      osc2.connect(gain2);
+      gain2.connect(this.audioCtx.destination);
+      osc2.start(now + 0.11);
+      osc2.stop(now + 0.20);
+    } catch (e) {}
+  }
+
+  /**
+   * Rádio walkie-talkie da equipe biomédica (Squelch + bipe de transmissão)
+   */
+  playRadioComm() {
+    if (!this.enabled) return;
+    this.init();
+    if (!this.audioCtx) return;
+
+    try {
+      const now = this.audioCtx.currentTime;
+
+      // Bipe agudo inicial de rádio VHF (1180Hz)
+      const osc = this.audioCtx.createOscillator();
+      const gain = this.audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(1180, now);
+      osc.frequency.setValueAtTime(1420, now + 0.04);
+      gain.gain.setValueAtTime(0.08, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+      osc.connect(gain);
+      gain.connect(this.audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.095);
+
+      // Chiado tático característico de rádio (micro noise burst)
+      const bufferSize = this.audioCtx.sampleRate * 0.06;
+      const buffer = this.audioCtx.createBuffer(1, bufferSize, this.audioCtx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = (Math.random() * 2 - 1) * 0.04;
+      }
+      const noise = this.audioCtx.createBufferSource();
+      noise.buffer = buffer;
+      const noiseGain = this.audioCtx.createGain();
+      noiseGain.gain.setValueAtTime(0.05, now + 0.09);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+      noise.connect(noiseGain);
+      noiseGain.connect(this.audioCtx.destination);
+      noise.start(now + 0.09);
+    } catch (e) {}
+  }
+
+  /**
+   * Ping de sonar / radar de navegação hospitalar (Fusam Maps)
+   */
+  playRadarScan() {
+    if (!this.enabled) return;
+    this.init();
+    if (!this.audioCtx) return;
+
+    try {
+      const now = this.audioCtx.currentTime;
+      const osc = this.audioCtx.createOscillator();
+      const gain = this.audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(1320, now);
+      osc.frequency.exponentialRampToValueAtTime(1100, now + 0.25);
+      gain.gain.setValueAtTime(0.09, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.28);
+      osc.connect(gain);
+      gain.connect(this.audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.29);
+    } catch (e) {}
+  }
+
+  /**
+   * Despacho de chamado em tempo real (Whoosh tecnológico + confirmação de bloqueio)
+   */
+  playDispatchWhoosh() {
+    if (!this.enabled) return;
+    this.init();
+    if (!this.audioCtx) return;
+
+    try {
+      const now = this.audioCtx.currentTime;
+
+      // Sweep ascendente
+      const osc1 = this.audioCtx.createOscillator();
+      const gain1 = this.audioCtx.createGain();
+      osc1.type = 'triangle';
+      osc1.frequency.setValueAtTime(260, now);
+      osc1.frequency.exponentialRampToValueAtTime(1240, now + 0.15);
+      gain1.gain.setValueAtTime(0.02, now);
+      gain1.gain.linearRampToValueAtTime(0.12, now + 0.10);
+      gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+      osc1.connect(gain1);
+      gain1.connect(this.audioCtx.destination);
+      osc1.start(now);
+      osc1.stop(now + 0.19);
+
+      // Acorde estelar de bloqueio
+      [784, 1046.5, 1318.5].forEach((freq, idx) => {
+        const osc = this.audioCtx.createOscillator();
+        const gain = this.audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now + 0.16 + idx * 0.03);
+        gain.gain.setValueAtTime(0.08, now + 0.16 + idx * 0.03);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35 + idx * 0.03);
+        osc.connect(gain);
+        gain.connect(this.audioCtx.destination);
+        osc.start(now + 0.16 + idx * 0.03);
+        osc.stop(now + 0.40);
+      });
+    } catch (e) {}
+  }
+
+  /**
+   * Micro-tick tátil de alta fidelidade para interações em cards e botões
+   */
+  playMicroTick() {
+    if (!this.enabled) return;
+    this.init();
+    if (!this.audioCtx) return;
+
+    try {
+      const now = this.audioCtx.currentTime;
+      const osc = this.audioCtx.createOscillator();
+      const gain = this.audioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(1600, now);
+      osc.frequency.exponentialRampToValueAtTime(800, now + 0.012);
+      gain.gain.setValueAtTime(0.04, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.012);
+      osc.connect(gain);
+      gain.connect(this.audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.014);
     } catch (e) {}
   }
 
@@ -327,6 +510,258 @@ class FusamAudioEngine {
         gain.connect(this.audioCtx.destination);
         osc.start(now + tone.time);
         osc.stop(now + tone.time + tone.dur);
+      });
+    } catch (e) {}
+  }
+
+  /**
+   * Som biomédico distintivo e com diversidade ao selecionar equipamentos (Presets ou Dropdown)
+   * Varia a assinatura sonora conforme o tipo de aparelho (Ventilador, Desfibrilador, O2, Maca, Monitor)
+   */
+  playEquipmentSelect(category = 'general') {
+    if (!this.enabled) return;
+    this.init();
+    if (!this.audioCtx) return;
+
+    try {
+      const now = this.audioCtx.currentTime;
+
+      if (category === 'ventilator') {
+        // Ventilador Pulmonar: som fluido de fluxo com rampa dupla
+        const osc = this.audioCtx.createOscillator();
+        const gain = this.audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(440, now);
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.08);
+        osc.frequency.exponentialRampToValueAtTime(660, now + 0.16);
+        gain.gain.setValueAtTime(0.01, now);
+        gain.gain.linearRampToValueAtTime(0.12, now + 0.04);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+        osc.connect(gain);
+        gain.connect(this.audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.17);
+      } else if (category === 'defibrillator') {
+        // Desfibrilador: carga rápida de capacitor com chirp ascendente de alta energia
+        const osc = this.audioCtx.createOscillator();
+        const gain = this.audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(520, now);
+        osc.frequency.exponentialRampToValueAtTime(1400, now + 0.12);
+        gain.gain.setValueAtTime(0.01, now);
+        gain.gain.linearRampToValueAtTime(0.09, now + 0.03);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+        osc.connect(gain);
+        gain.connect(this.audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.15);
+      } else if (category === 'oxygen') {
+        // Oxigênio medicinal: som suave de pressurização pneumática
+        const osc = this.audioCtx.createOscillator();
+        const gain = this.audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(800, now);
+        osc.frequency.exponentialRampToValueAtTime(400, now + 0.14);
+        gain.gain.setValueAtTime(0.01, now);
+        gain.gain.linearRampToValueAtTime(0.10, now + 0.03);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+        osc.connect(gain);
+        gain.connect(this.audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.15);
+      } else if (category === 'stretcher') {
+        // Maca hospitalar / Mecânica: trava mecânica de segurança tátil (dois cliques rápidos)
+        [0, 0.045].forEach(delay => {
+          const osc = this.audioCtx.createOscillator();
+          const gain = this.audioCtx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(320, now + delay);
+          osc.frequency.exponentialRampToValueAtTime(120, now + delay + 0.035);
+          gain.gain.setValueAtTime(0.12, now + delay);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.035);
+          osc.connect(gain);
+          gain.connect(this.audioCtx.destination);
+          osc.start(now + delay);
+          osc.stop(now + delay + 0.04);
+        });
+      } else {
+        // Padrão Geral: bipe digital nítido estilo scanner biomédico hospitalar
+        const osc1 = this.audioCtx.createOscillator();
+        const gain1 = this.audioCtx.createGain();
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(587.33, now);
+        osc1.frequency.exponentialRampToValueAtTime(880, now + 0.045);
+        gain1.gain.setValueAtTime(0, now);
+        gain1.gain.linearRampToValueAtTime(0.11, now + 0.01);
+        gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+        osc1.connect(gain1);
+        gain1.connect(this.audioCtx.destination);
+        osc1.start(now);
+        osc1.stop(now + 0.055);
+
+        const osc2 = this.audioCtx.createOscillator();
+        const gain2 = this.audioCtx.createGain();
+        osc2.type = 'triangle';
+        osc2.frequency.setValueAtTime(1174.66, now + 0.04);
+        osc2.frequency.exponentialRampToValueAtTime(1480, now + 0.12);
+        gain2.gain.setValueAtTime(0, now + 0.04);
+        gain2.gain.linearRampToValueAtTime(0.13, now + 0.05);
+        gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+        osc2.connect(gain2);
+        gain2.connect(this.audioCtx.destination);
+        osc2.start(now + 0.04);
+        osc2.stop(now + 0.16);
+      }
+    } catch (e) {}
+  }
+
+  /**
+   * Som de avanço de etapa no rastreador (Tracer Progress Chime)
+   */
+  playStepAdvance() {
+    if (!this.enabled) return;
+    this.init();
+    if (!this.audioCtx) return;
+
+    try {
+      const now = this.audioCtx.currentTime;
+      [
+        { freq: 440, time: 0, dur: 0.07 },     // A4
+        { freq: 554.37, time: 0.05, dur: 0.08 }, // C#5
+        { freq: 659.25, time: 0.10, dur: 0.12 }  // E5
+      ].forEach(t => {
+        const osc = this.audioCtx.createOscillator();
+        const gain = this.audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(t.freq, now + t.time);
+        gain.gain.setValueAtTime(0.08, now + t.time);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + t.time + t.dur);
+        osc.connect(gain);
+        gain.connect(this.audioCtx.destination);
+        osc.start(now + t.time);
+        osc.stop(now + t.time + t.dur);
+      });
+    } catch (e) {}
+  }
+
+  /**
+   * Som de retrocesso de etapa no rastreador
+   */
+  playStepRegress() {
+    if (!this.enabled) return;
+    this.init();
+    if (!this.audioCtx) return;
+
+    try {
+      const now = this.audioCtx.currentTime;
+      [
+        { freq: 659.25, time: 0, dur: 0.06 },
+        { freq: 554.37, time: 0.04, dur: 0.06 },
+        { freq: 440, time: 0.08, dur: 0.09 }
+      ].forEach(t => {
+        const osc = this.audioCtx.createOscillator();
+        const gain = this.audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(t.freq, now + t.time);
+        gain.gain.setValueAtTime(0.06, now + t.time);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + t.time + t.dur);
+        osc.connect(gain);
+        gain.connect(this.audioCtx.destination);
+        osc.start(now + t.time);
+        osc.stop(now + t.time + t.dur);
+      });
+    } catch (e) {}
+  }
+
+  /**
+   * Som de nota técnica adicionada
+   */
+  playNoteAdded() {
+    if (!this.enabled) return;
+    this.init();
+    if (!this.audioCtx) return;
+
+    try {
+      const now = this.audioCtx.currentTime;
+      const osc = this.audioCtx.createOscillator();
+      const gain = this.audioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(900, now);
+      osc.frequency.exponentialRampToValueAtTime(450, now + 0.04);
+      gain.gain.setValueAtTime(0.09, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+      osc.connect(gain);
+      gain.connect(this.audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.045);
+    } catch (e) {}
+  }
+
+  /**
+   * Efeito sonoro comemorativo de Confetes (Passo Final / Equipamento 100% Liberado)
+   * Fanfarra brilhante com pop de celebração e arpeggio triunfante
+   */
+  playConfettiCelebration() {
+    if (!this.enabled) return;
+    this.init();
+    if (!this.audioCtx) return;
+
+    try {
+      const now = this.audioCtx.currentTime;
+
+      // 1. Pop inicial de confete (popper snap)
+      const popOsc = this.audioCtx.createOscillator();
+      const popGain = this.audioCtx.createGain();
+      popOsc.type = 'sine';
+      popOsc.frequency.setValueAtTime(320, now);
+      popOsc.frequency.exponentialRampToValueAtTime(80, now + 0.06);
+      popGain.gain.setValueAtTime(0.18, now);
+      popGain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+      popOsc.connect(popGain);
+      popGain.connect(this.audioCtx.destination);
+      popOsc.start(now);
+      popOsc.stop(now + 0.065);
+
+      // 2. Cascata alegre de arpeggio triunfante (C5 -> E5 -> G5 -> C6 -> E6)
+      const notes = [
+        { freq: 523.25, time: 0.04, dur: 0.12 }, // C5
+        { freq: 659.25, time: 0.10, dur: 0.14 }, // E5
+        { freq: 783.99, time: 0.16, dur: 0.16 }, // G5
+        { freq: 1046.50, time: 0.22, dur: 0.22 }, // C6
+        { freq: 1318.51, time: 0.28, dur: 0.38 }  // E6 (agudo brilhante com cauda)
+      ];
+
+      notes.forEach(note => {
+        const osc = this.audioCtx.createOscillator();
+        const gain = this.audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(note.freq, now + note.time);
+
+        gain.gain.setValueAtTime(0, now + note.time);
+        gain.gain.linearRampToValueAtTime(0.12, now + note.time + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + note.time + note.dur);
+
+        osc.connect(gain);
+        gain.connect(this.audioCtx.destination);
+        osc.start(now + note.time);
+        osc.stop(now + note.time + note.dur + 0.01);
+      });
+
+      // 3. Acorde ressonante de sustentação dourada ao fundo
+      const chordFrequencies = [523.25, 659.25, 783.99, 1046.50];
+      chordFrequencies.forEach(f => {
+        const osc = this.audioCtx.createOscillator();
+        const gain = this.audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(f, now + 0.32);
+        gain.gain.setValueAtTime(0, now + 0.32);
+        gain.gain.linearRampToValueAtTime(0.06, now + 0.36);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.85);
+
+        osc.connect(gain);
+        gain.connect(this.audioCtx.destination);
+        osc.start(now + 0.32);
+        osc.stop(now + 0.90);
       });
     } catch (e) {}
   }
@@ -727,6 +1162,8 @@ const DEPARTMENTS_LIST = [
  * rota de laser com setas direcionais animadas, sonar de emergência e HUD de telemetria.
  */
 
+
+
 class GoogleStyleHospitalMap {
   constructor(canvasContainerId, options = {}) {
     this.container = typeof canvasContainerId === 'string' 
@@ -863,18 +1300,22 @@ class GoogleStyleHospitalMap {
     // Eventos dos Controles
     controls.querySelector('#mapZoomIn').onclick = (e) => {
       e.stopPropagation();
+      audioEngine.playRadarScan();
       this.zoomAt(1.25);
     };
     controls.querySelector('#mapZoomOut').onclick = (e) => {
       e.stopPropagation();
+      audioEngine.playRadarScan();
       this.zoomAt(0.8);
     };
     controls.querySelector('#mapRecenter').onclick = (e) => {
       e.stopPropagation();
+      audioEngine.playRadarScan();
       this.recenter();
     };
     topBar.querySelector('#mapToggleFloor').onclick = (e) => {
       e.stopPropagation();
+      audioEngine.playTabSwitch();
       this.isFloorPlan = !this.isFloorPlan;
       const lbl = topBar.querySelector('#mapModeLabel');
       if (lbl) lbl.textContent = this.isFloorPlan ? 'Vista Campus 3D' : 'Planta Arquitetônica';
@@ -1495,6 +1936,7 @@ class RepairTracker {
     this.autoSimTimer = null;
     this.modalEl = null;
     this.hospitalMap = null;
+    this.confettiAnimFrame = null;
   }
 
   init() {
@@ -1529,6 +1971,7 @@ class RepairTracker {
       this.hospitalMap.destroy();
       this.hospitalMap = null;
     }
+    this.stopConfettiVFX();
     if (this.modalEl) {
       this.modalEl.classList.add('hidden');
       document.body.classList.remove('overflow-hidden');
@@ -1543,21 +1986,161 @@ class RepairTracker {
 
   advanceStep() {
     if (!this.currentTicket) return;
-    audioEngine.playClick();
     const curIdx = this.getCurrentStepIndex();
     if (curIdx < TRACKING_STEPS.length - 1) {
       const nextStep = TRACKING_STEPS[curIdx + 1];
-      this.updateStatus(nextStep.key);
+      if (nextStep.key === 'completed') {
+        // Clicando para a etapa final: aciona a celebração completa com confetes e fanfarra
+        this.updateStatus('completed');
+      } else {
+        audioEngine.playStepAdvance();
+        this.updateStatus(nextStep.key);
+      }
     }
   }
 
   regressStep() {
     if (!this.currentTicket) return;
-    audioEngine.playClick();
+    audioEngine.playStepRegress();
     const curIdx = this.getCurrentStepIndex();
     if (curIdx > 0) {
       const prevStep = TRACKING_STEPS[curIdx - 1];
       this.updateStatus(prevStep.key);
+    }
+  }
+
+  /**
+   * Dispara o efeito comemorativo completo: SFX de vitória + VFX de confetes em tela cheia
+   */
+  triggerConfetti() {
+    audioEngine.playConfettiCelebration();
+    this.launchConfettiVFX();
+  }
+
+  launchConfettiVFX() {
+    this.stopConfettiVFX();
+
+    let canvas = document.getElementById('fusamConfettiCanvas');
+    if (!canvas) {
+      canvas = document.createElement('canvas');
+      canvas.id = 'fusamConfettiCanvas';
+      canvas.style.position = 'fixed';
+      canvas.style.top = '0';
+      canvas.style.left = '0';
+      canvas.style.width = '100vw';
+      canvas.style.height = '100vh';
+      canvas.style.pointerEvents = 'none';
+      canvas.style.zIndex = '99999';
+      document.body.appendChild(canvas);
+    }
+
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const colors = [
+      '#06b6d4', // Cyan elétrico Fusam
+      '#0284c7', // Azul Hospitalar Fusam
+      '#10b981', // Verde Esmeralda Sucesso
+      '#f59e0b', // Dourado Celebração
+      '#ec4899', // Rosa Magenta
+      '#8b5cf6', // Violeta
+      '#38bdf8'  // Azul Celeste
+    ];
+
+    const particleCount = 150;
+    const particles = [];
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height * 0.32;
+
+    for (let i = 0; i < particleCount; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const velocity = 8 + Math.random() * 15;
+      particles.push({
+        x: centerX + (Math.random() - 0.5) * 200,
+        y: centerY + (Math.random() - 0.5) * 80,
+        vx: Math.cos(angle) * velocity,
+        vy: Math.sin(angle) * velocity - 5,
+        gravity: 0.28 + Math.random() * 0.16,
+        friction: 0.98,
+        wobble: Math.random() * 10,
+        wobbleSpeed: 0.08 + Math.random() * 0.06,
+        size: 7 + Math.random() * 7,
+        width: 6 + Math.random() * 9,
+        height: 10 + Math.random() * 9,
+        rotation: Math.random() * 360,
+        rotationSpeed: (Math.random() - 0.5) * 10,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        opacity: 1,
+        shape: Math.random() > 0.4 ? 'rect' : (Math.random() > 0.5 ? 'circle' : 'ribbon')
+      });
+    }
+
+    const startTime = performance.now();
+    const duration = 3800;
+
+    const animate = (currentTime) => {
+      const elapsed = currentTime - startTime;
+      if (elapsed > duration) {
+        this.stopConfettiVFX();
+        return;
+      }
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      particles.forEach(p => {
+        p.vx *= p.friction;
+        p.vy *= p.friction;
+        p.vy += p.gravity;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.wobble += p.wobbleSpeed;
+        p.rotation += p.rotationSpeed;
+
+        if (elapsed > duration * 0.65) {
+          p.opacity = Math.max(0, 1 - (elapsed - duration * 0.65) / (duration * 0.35));
+        }
+
+        ctx.save();
+        ctx.globalAlpha = p.opacity;
+        ctx.fillStyle = p.color;
+        ctx.strokeStyle = p.color;
+
+        const wobbleX = p.x + Math.sin(p.wobble) * 8;
+        ctx.translate(wobbleX, p.y);
+        ctx.rotate((p.rotation * Math.PI) / 180);
+
+        if (p.shape === 'circle') {
+          ctx.beginPath();
+          ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (p.shape === 'ribbon') {
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.moveTo(-p.width / 2, -p.height / 2);
+          ctx.quadraticCurveTo(0, p.height / 4, p.width / 2, p.height / 2);
+          ctx.stroke();
+        } else {
+          ctx.fillRect(-p.width / 2, -p.height / 2, p.width, p.height);
+        }
+
+        ctx.restore();
+      });
+
+      this.confettiAnimFrame = requestAnimationFrame(animate);
+    };
+
+    this.confettiAnimFrame = requestAnimationFrame(animate);
+  }
+
+  stopConfettiVFX() {
+    if (this.confettiAnimFrame) {
+      cancelAnimationFrame(this.confettiAnimFrame);
+      this.confettiAnimFrame = null;
+    }
+    const canvas = document.getElementById('fusamConfettiCanvas');
+    if (canvas && canvas.parentNode) {
+      canvas.parentNode.removeChild(canvas);
     }
   }
 
@@ -1584,7 +2167,8 @@ class RepairTracker {
     if (newStatusKey === 'completed') {
       this.currentTicket.estimatedMinutesRemaining = 0;
       if (this.currentTicket.technician) this.currentTicket.technician.eta = "Concluído";
-      audioEngine.playSuccess();
+      // Disparo automático de confetes e áudio ao concluir chamado
+      this.triggerConfetti();
     } else if (newStatusKey === 'testing') {
       this.currentTicket.estimatedMinutesRemaining = 5;
     } else if (newStatusKey === 'in_repair') {
@@ -1649,7 +2233,7 @@ class RepairTracker {
 
   addTechnicianNote(noteText) {
     if (!this.currentTicket || !noteText.trim()) return;
-    audioEngine.playClick();
+    audioEngine.playNoteAdded();
     const now = new Date();
     const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
     
@@ -1733,6 +2317,21 @@ class RepairTracker {
         <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden mt-3">
           <div class="h-full bg-gradient-to-r from-cyan-600 to-cyan-400 rounded-full transition-all duration-500" style="width: ${progressPercent}%;"></div>
         </div>
+
+        ${t.status === 'completed' ? `
+          <div class="celebration-hero-pill">
+            <div class="flex items-center gap-2.5">
+              <span class="text-xl">🎉</span>
+              <div>
+                <div class="font-extrabold text-xs text-emerald-950 uppercase tracking-wider">Equipamento Liberado & Certificado!</div>
+                <div class="text-[11px] text-emerald-700">Controle de qualidade concluído e laudo emitido com sucesso.</div>
+              </div>
+            </div>
+            <button id="triggerConfettiAgainBtn" class="btn-stylish btn-fusam-cyan text-xs py-1 px-3 ml-auto">
+              🎉 Soltar Confetes
+            </button>
+          </div>
+        ` : ''}
       </div>
 
       <!-- STEPPER HORIZONTAL -->
@@ -1903,7 +2502,10 @@ class RepairTracker {
 
     const callBtn = document.getElementById('callTechBtn');
     if (callBtn) {
-      callBtn.onclick = () => audioEngine.playClick();
+      callBtn.onclick = (e) => {
+        e.preventDefault();
+        audioEngine.playRadioComm();
+      };
     }
 
     const noteForm = document.getElementById('addNoteForm');
@@ -1925,6 +2527,25 @@ class RepairTracker {
         window.print();
       };
     }
+
+    const confettiBtn = document.getElementById('triggerConfettiAgainBtn');
+    if (confettiBtn) {
+      confettiBtn.onclick = () => this.triggerConfetti();
+    }
+
+    const stepNodes = document.querySelectorAll('.step-node');
+    stepNodes.forEach((node, idx) => {
+      node.style.cursor = 'pointer';
+      node.title = `Ir para: ${TRACKING_STEPS[idx].title}`;
+      node.onclick = () => {
+        if (idx === TRACKING_STEPS.length - 1) {
+          this.updateStatus(TRACKING_STEPS[idx].key);
+        } else {
+          audioEngine.playStepAdvance();
+          this.updateStatus(TRACKING_STEPS[idx].key);
+        }
+      };
+    });
   }
 }
 
@@ -2078,10 +2699,21 @@ class FusamApp {
       banner.classList.remove('hidden');
       const textEl = document.getElementById('emergencyBannerText');
       if (textEl) {
+        const topTicket = activeCritical[0];
         textEl.innerHTML = `
-          <span class="font-extrabold text-red-600 uppercase tracking-wider">🚨 ${activeCritical.length} Alerta de Suporte Vital:</span>
-          <span class="text-slate-800 font-bold ml-1">${activeCritical[0].equipmentName}</span>
-          <span class="text-slate-500 text-[11px] font-mono">(${activeCritical[0].department})</span>
+          <div class="flex items-center gap-2 flex-wrap mb-1">
+            <span class="emergency-badge-code-red">🚨 ${activeCritical.length} CÓDIGO VERMELHO ATIVO</span>
+            <span class="emergency-equip-title">${topTicket.equipmentName}</span>
+            <span class="emergency-pat-tag">Pat: ${topTicket.patrimony || 'PAT-003190'}</span>
+            <span class="emergency-sector-tag">${topTicket.department}</span>
+          </div>
+          <div class="flex items-center gap-2 flex-wrap text-xs text-slate-600">
+            <span class="emergency-sla-tag">⏱️ SLA Resposta: &lt; ${topTicket.estimatedMinutesRemaining || 15} min</span>
+            <span class="text-slate-300">•</span>
+            <span class="emergency-tech-tag">👨‍🔬 ${topTicket.technician?.name || 'Técnico Biomédico em Deslocamento'}</span>
+            <span class="text-slate-300">•</span>
+            <span class="text-slate-500 text-[11px] font-mono">Local: ${topTicket.sectorLocation}</span>
+          </div>
         `;
       }
 
@@ -2255,21 +2887,51 @@ class FusamApp {
 
     if (this.inbox.length === 0) {
       listEl.innerHTML = `
-        <div class="p-6 text-center text-slate-400 text-xs">
-          ${Icons.inbox} Nenhuma mensagem.
+        <div class="p-8 text-center bg-slate-50 rounded-2xl border border-slate-200/80">
+          <div class="w-12 h-12 mx-auto mb-2 text-cyan-600 bg-cyan-50 rounded-full flex items-center justify-center">
+            ${Icons.inbox}
+          </div>
+          <h4 class="text-sm font-bold text-slate-800">Caixa de entrada vazia</h4>
+          <p class="text-xs text-slate-400 mt-1">Nenhum comunicado da central no momento.</p>
         </div>
       `;
       return;
     }
 
+    const priorityBadge = (priority) => {
+      if (priority === 'critical') {
+        return `<span class="badge-clean critical">🚨 Prioridade Máxima</span>`;
+      } else if (priority === 'high' || priority === 'medium') {
+        return `<span class="badge-clean medium">⚡ Engenharia Clínica</span>`;
+      } else {
+        return `<span class="badge-clean low">ℹ️ Informativo</span>`;
+      }
+    };
+
     listEl.innerHTML = this.inbox.map(m => `
-      <div class="p-3.5 rounded-2xl border border-slate-200/80 bg-white hover:border-cyan-400 shadow-sm transition-all cursor-pointer">
-        <div class="flex items-center justify-between text-[11px] text-slate-400 mb-1">
-          <span class="font-bold text-slate-800">${m.sender}</span>
-          <span class="font-mono text-[10px]">${m.time}</span>
+      <div class="inbox-msg-card ${m.priority || 'medium'}" data-msg-id="${m.id}">
+        <div class="flex items-center justify-between flex-wrap gap-2 mb-1.5">
+          <div class="flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-cyan-50 border border-cyan-200 text-cyan-700 flex items-center justify-center text-xs font-bold">
+              ${m.priority === 'critical' ? '🚨' : (m.priority === 'medium' ? '⚙️' : '📢')}
+            </span>
+            <div>
+              <span class="font-extrabold text-xs text-slate-900">${m.sender}</span>
+              <div class="text-[10px] text-slate-400 font-mono">${m.time}</div>
+            </div>
+          </div>
+          ${priorityBadge(m.priority)}
         </div>
-        <h4 class="text-xs font-bold text-slate-900 mb-1">${m.subject}</h4>
-        <p class="text-[11px] text-slate-500 leading-relaxed">${m.content}</p>
+
+        <h4 class="text-xs font-bold text-slate-900 mt-2 mb-1 leading-snug">${m.subject}</h4>
+        <p class="text-xs text-slate-600 leading-relaxed">${m.content}</p>
+
+        <div class="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
+          <span class="flex items-center gap-1 text-cyan-700 font-semibold">
+            ${Icons.checkCircle} Comunicado Oficial Fusam
+          </span>
+          <span class="text-slate-400 text-[10px] font-mono">${m.id}</span>
+        </div>
       </div>
     `).join('');
   }
@@ -2300,6 +2962,9 @@ class FusamApp {
     const contentCreate = document.getElementById('inboxContentCreate');
     const contentMessages = document.getElementById('inboxContentMessages');
     const pinnedFooter = document.querySelector('.modal-pinned-footer');
+    const modalTitle = document.getElementById('modalHeaderTitle');
+    const modalSubtitle = document.getElementById('modalHeaderSubtitle');
+    const modalBadge = document.getElementById('modalIconBadge');
 
     if (tab === 'create') {
       tabCreate?.classList.add('active');
@@ -2307,12 +2972,24 @@ class FusamApp {
       contentCreate?.classList.remove('hidden');
       contentMessages?.classList.add('hidden');
       if (pinnedFooter) pinnedFooter.style.display = 'flex';
+
+      if (modalTitle) modalTitle.textContent = 'Nova Solicitação de Manutenção';
+      if (modalSubtitle) modalSubtitle.textContent = 'Pronto-Socorro & Engenharia Clínica Fusam';
+      if (modalBadge) {
+        modalBadge.innerHTML = `<svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>`;
+      }
     } else {
       tabMessages?.classList.add('active');
       tabCreate?.classList.remove('active');
       contentMessages?.classList.remove('hidden');
       contentCreate?.classList.add('hidden');
       if (pinnedFooter) pinnedFooter.style.display = 'none';
+
+      if (modalTitle) modalTitle.textContent = 'Caixa de Entrada & Avisos da Central';
+      if (modalSubtitle) modalSubtitle.textContent = 'Comunicados oficiais, diretoria e despachos biomédicos';
+      if (modalBadge) {
+        modalBadge.innerHTML = `<svg class="lucide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>`;
+      }
     }
   }
 
@@ -2358,9 +3035,15 @@ class FusamApp {
     };
 
     if (priority === 'critical') {
-      audioEngine.playUrgentSiren();
+      audioEngine.playDispatchWhoosh();
+      setTimeout(() => {
+        audioEngine.playUrgentSiren();
+      }, 250);
     } else {
-      audioEngine.playSuccess();
+      audioEngine.playDispatchWhoosh();
+      setTimeout(() => {
+        audioEngine.playSuccess();
+      }, 200);
     }
 
     this.tickets.unshift(newTicket);
@@ -2373,14 +3056,38 @@ class FusamApp {
   }
 
   bindGlobalEvents() {
-    const openInboxHeaderBtn = document.getElementById('openInboxHeaderBtn');
-    if (openInboxHeaderBtn) {
-      openInboxHeaderBtn.onclick = () => this.openInboxModal('create');
+    // Telemetria ECG interativa: clique para ouvir batimentos cardíacos simulados
+    const ecgBadge = document.getElementById('telemetryEcgBadge');
+    if (ecgBadge) {
+      ecgBadge.onclick = () => {
+        ecgBadge.classList.add('ecg-beating');
+        audioEngine.playHeartbeatPulse();
+        setTimeout(() => ecgBadge.classList.remove('ecg-beating'), 1400);
+      };
     }
 
+    // Botão Caixa de Entrada no cabeçalho: abre diretamente a tela de Mensagens/Avisos
+    const openInboxHeaderBtn = document.getElementById('openInboxHeaderBtn');
+    if (openInboxHeaderBtn) {
+      openInboxHeaderBtn.onclick = () => this.openInboxModal('messages');
+    }
+
+    // Botão Novo Chamado no cabeçalho: abre diretamente o formulário de abertura de chamado
+    const openNewTicketHeaderBtn = document.getElementById('openNewTicketHeaderBtn');
+    if (openNewTicketHeaderBtn) {
+      openNewTicketHeaderBtn.onclick = () => this.openInboxModal('create');
+    }
+
+    // Botão flutuante inferior: abre formulário de nova solicitação
     const floatingActionBtn = document.getElementById('floatingNewTicketBtn');
     if (floatingActionBtn) {
       floatingActionBtn.onclick = () => this.openInboxModal('create');
+    }
+
+    // Atalho dentro da tela da Caixa de Entrada para abrir nova solicitação
+    const inboxNewTicketShortcutBtn = document.getElementById('inboxNewTicketShortcutBtn');
+    if (inboxNewTicketShortcutBtn) {
+      inboxNewTicketShortcutBtn.onclick = () => this.switchInboxTab('create');
     }
 
     const closeInboxBtn = document.getElementById('closeInboxModalBtn');
@@ -2414,15 +3121,23 @@ class FusamApp {
 
     if (catSelect && prioritySelect && lifeSupportCheckbox) {
       catSelect.onchange = () => {
-        audioEngine.playClick();
+        if (!catSelect.value) {
+          audioEngine.playClick();
+          return;
+        }
+
+        // Tocar som biomédico distintivo e com diversidade conforme o equipamento selecionado
+        audioEngine.playEquipmentSelect(catSelect.value || 'general');
+
         const selectedOpt = catSelect.options[catSelect.selectedIndex];
-        const isLife = selectedOpt.getAttribute('data-lifesupport') === 'true';
+        const isLife = selectedOpt && selectedOpt.getAttribute('data-lifesupport') === 'true';
         if (isLife) {
           lifeSupportCheckbox.checked = true;
           prioritySelect.value = 'critical';
           const alertHelp = document.getElementById('lifeSupportAlert');
           if (alertHelp) alertHelp.classList.remove('hidden');
-          audioEngine.playUrgentSiren();
+          // Alerta sonoro de emergência médica logo após o bip do aparelho
+          setTimeout(() => audioEngine.playUrgentSiren(), 180);
         } else {
           lifeSupportCheckbox.checked = false;
           const alertHelp = document.getElementById('lifeSupportAlert');
@@ -2456,11 +3171,15 @@ class FusamApp {
       };
     });
 
-    // Dropdown de Categoria
+    // Dropdown de Categoria (Filtro Superior) - Som de Equipamento
     const filterCatSelect = document.getElementById('filterCategorySelect');
     if (filterCatSelect) {
       filterCatSelect.onchange = (e) => {
-        audioEngine.playClick();
+        if (e.target.value !== 'all') {
+          audioEngine.playEquipmentSelect(e.target.value);
+        } else {
+          audioEngine.playClick();
+        }
         this.categoryFilter = e.target.value;
         this.renderTickets();
       };
@@ -2480,18 +3199,24 @@ class FusamApp {
     if (soundToggleBtn) {
       soundToggleBtn.onclick = () => {
         this.soundActive = audioEngine.toggleSound();
-        soundToggleBtn.innerHTML = this.soundActive ? `${Icons.volume2} Som: Ativado` : `${Icons.volumeX} Som: Silenciado`;
+        soundToggleBtn.classList.toggle('sound-muted', !this.soundActive);
+        const spanText = soundToggleBtn.querySelector('span');
+        if (spanText) {
+          spanText.textContent = this.soundActive ? 'Som: Ativado' : 'Som: Silenciado';
+        }
         soundToggleBtn.classList.toggle('text-slate-400', !this.soundActive);
       };
     }
 
-    // Presets rápidos no formulário
+    // Presets rápidos no formulário (Preenchimento em 1 clique) - Som Biomédico com Assinatura do Aparelho
     const presetButtons = document.querySelectorAll('.quick-preset-btn');
     presetButtons.forEach(btn => {
       btn.onclick = () => {
-        audioEngine.playClick();
+        const cat = btn.getAttribute('data-cat') || 'general';
+        // Tocar som biomédico específico com rica diversidade sonora
+        audioEngine.playEquipmentSelect(cat);
+
         const title = btn.getAttribute('data-title');
-        const cat = btn.getAttribute('data-cat');
         const dept = btn.getAttribute('data-dept');
         const desc = btn.getAttribute('data-desc');
         const equip = btn.getAttribute('data-equip');
