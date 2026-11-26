@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/fusam-logo.jpg" width="180">
+</p>
+
 # 🏥 FUSAM | Sistema Inteligente de Gestão de Reparos Hospitalares
 
 **Central de Manutenção, Engenharia Clínica e Rastreamento de Ocorrências**
