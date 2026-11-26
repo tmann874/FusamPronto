@@ -94,3 +94,6 @@ Este projeto possui finalidade demonstrativa e de desenvolvimento tecnológico. 
 Projeto tecnológico voltado à inovação, modernização e melhoria dos processos de manutenção hospitalar da FUSAM.
 
 **FUSAM — Tecnologia, organização e inovação a serviço da saúde.** 🏥
+
+
+##**Realizado por:** Davi e Enzo, do Gamt
